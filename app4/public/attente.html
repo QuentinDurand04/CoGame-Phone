@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+    <title>En Attente de l'Hôte</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Recevoir l'événement startGame pour rediriger vers la route /manette
+        socket.on('startGame', () => {
+            window.location.href = '/manette';
+        });
+
+        // Gestion d'erreur pour le cas où le code PIN n'est pas valide
+        socket.on('error', (message) => {
+            alert(message);
+            window.location.href = '/choix';
+        });
+    </script>
+</head>
+<body>
+<h1>En attente de l'hôte pour démarrer...</h1>
+</body>
+</html>

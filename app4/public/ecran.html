@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+    <title>Écran Principal</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        $(function () {
+            const socket = io();
+            socket.emit('identify', 'ecran');
+
+            // Afficher la nouvelle question
+            socket.on('newQuestion', (data) => {
+                $('#question').text(data.question);
+                $('#answers').empty();
+                data.answers.forEach((answer, index) => {
+                    $('#answers').append('<li>' + answer + '</li>');
+                });
+                $('#timer').text(15);
+            });
+
+            // Mettre à jour le nombre de joueurs et de réponses
+            socket.on('updatePlayerCount', (count) => {
+                $('#playerCount').text('Joueurs dans la partie : ' + count);
+            });
+            socket.on('updateResponseCount', (count) => {
+                $('#responseCount').text('Réponses reçues : ' + count);
+            });
+
+            socket.on('updateTimer', (timeLeft) => {
+                $('#timer').text(timeLeft);
+                $('#file').val(timeLeft);
+
+                // Si le timer est à 0, mettre la barre de progression et le timer à zéro
+                if (timeLeft === 0) {
+                    $('#timer').text("0");
+                    $('#file').val(0);
+                }
+            });
+
+
+            // Afficher la bonne réponse
+            socket.on('revealAnswer', (correctIndex) => {
+                $('#answers li').eq(correctIndex).css('color', 'green');
+            });
+        });
+    </script>
+</head>
+<body>
+<h1>Écran Principal</h1>
+<div id="playerCount">Joueurs dans la partie : 0</div>
+<div id="responseCount">Réponses reçues : 0</div>
+<div>
+    <h2>Temps restant : <span id="timer">15</span> secondes</h2>
+</div>
+<progress id="file" max="15" value=15></progress>
+<h2 id="question">En attente de joueurs...</h2>
+<ul id="answers"></ul>
+</body>
+</html>

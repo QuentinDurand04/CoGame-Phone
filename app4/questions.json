@@ -1,0 +1,22 @@
+[
+    {
+        "question": "Quelle est la capitale de la France ?",
+        "answers": ["Berlin", "Madrid", "Paris", "Rome"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Combien font 2 + 2 ?",
+        "answers": ["3", "4", "5", "6"],
+        "correctIndex": 1
+    },
+    {
+        "question": "Quelle est la couleur du ciel par temps clair ?",
+        "answers": ["Rouge", "Vert", "Bleu", "Jaune"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Quelle est la couleur de l'eau ?",
+        "answers": ["Orange", "Transparent", "Violet", "Bleu"],
+        "correctIndex": 1
+    }
+]
