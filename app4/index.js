@@ -108,6 +108,7 @@ io.on('connection', (socket) => {
             delete responses[socket.id];
             io.emit('updatePlayerCount', players.size);
             if (players.size === 0) {
+                isTimerRunning = false;
                 resetTimer();
                 resetQuestion();
             }
