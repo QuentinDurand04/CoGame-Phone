@@ -28,6 +28,9 @@ app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
 
 function startTimer() {
+    if (isTimerRunning) return;
+    isTimerRunning = true;
+
     timeLeft = 15; // Durée initiale en secondes
     io.emit('updateTimer', timeLeft); // Envoyer la valeur initiale du timer
 
@@ -58,6 +61,7 @@ function nextQuestion() {
     responses = {}; // Réinitialiser les réponses
     io.emit('newQuestion', questions[currentQuestionIndex]);
     io.emit('updateResponseCount', 0); // Réinitialiser le compteur de réponses
+    isTimerRunning = false;
     startTimer(); // Lancer le minuteur pour la nouvelle question
 }
 
