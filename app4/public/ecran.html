@@ -41,7 +41,7 @@
 
             // Afficher la bonne réponse
             socket.on('revealAnswer', (correctIndex) => {
-                $('#answers li').eq(correctIndex).css('color', 'green');
+                $('#answers div').eq(correctIndex).css('color', 'green');
             });
         });
     </script>

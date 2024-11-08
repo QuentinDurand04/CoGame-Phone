@@ -9,6 +9,9 @@ let questions = [];
 let currentQuestionIndex = 0;
 let players = new Set();
 let responses = {};
+let timer;
+let timeLeft = 15;
+let isTimerRunning = false;
 
 // Charger les questions depuis le fichier JSON
 fs.readFile('questions.json', 'utf8', (err, data) => {
@@ -24,10 +27,6 @@ app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
 app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html'));
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
 
-
-let timer;
-let timeLeft = 15;
-
 function startTimer() {
     timeLeft = 15; // Durée initiale en secondes
     io.emit('updateTimer', timeLeft); // Envoyer la valeur initiale du timer
@@ -42,6 +41,16 @@ function startTimer() {
             setTimeout(nextQuestion, 4000); // Passer à la question suivante après 4 secondes
         }
     }, 1000);
+}
+
+function resetTimer() {
+    clearInterval(timer); // Arrête tout décompte en cours
+    timeLeft = 15; // Durée initiale en secondes
+    io.emit('updateTimer', timeLeft); // Envoie l'état figé du timer à 15 secondes
+}
+
+function resetQuestion(){
+    io.emit('newQuestion', { question: "En attente de joueurs...", answers: [] });
 }
 
 function nextQuestion() {
@@ -67,6 +76,10 @@ io.on('connection', (socket) => {
             players.add(socket.id);
             io.emit('updatePlayerCount', players.size);
             sendCurrentQuestion();
+            if (!isTimerRunning) {
+                sendCurrentQuestion();
+                startTimer();
+            }
         }
     });
 
@@ -90,6 +103,10 @@ io.on('connection', (socket) => {
             players.delete(socket.id);
             delete responses[socket.id];
             io.emit('updatePlayerCount', players.size);
+            if (players.size === 0) {
+                resetTimer();
+                resetQuestion();
+            }
         }
     });
 });
