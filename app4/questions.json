@@ -1,5 +1,96 @@
 [
     {
+        "question": "Si un mouton miaule, de quelle couleur est le soleil ?",
+        "answers": ["Jaune", "Carré", "Mauve", "Brocoli"],
+        "correctIndex": 0
+    },
+    {
+        "question": "Quelle est la capitale de la planète Mars ?",
+        "answers": ["Mars City", "Gros caillou", "Chocolat", "Elle n'en a pas"],
+        "correctIndex": 3
+    },
+    {
+        "question": "Combien de pizzas pouvez-vous tenir dans votre oreille gauche ?",
+        "answers": ["Faut essayer", "Une", "Trois", "Dix"],
+        "correctIndex": 0
+    },
+
+    {
+        "question": "Combien de secondes y a-t-il dans une minute si vous portez des chaussettes vertes ?",
+        "answers": ["60", "45", "Ça dépend des chaussettes", "Aucune idée"],
+        "correctIndex": 0
+    },
+    {
+        "question": "Pourquoi la mer est-elle salée ?",
+        "answers": ["Les poissons pleurent beaucoup", "Quelqu'un y a renversé un pot de sel géant", "C'est un mystère", "Parce qu'elle n'est pas sucrée"],
+        "correctIndex": 3
+    },
+    {
+        "question": "Si vous mangez un nuage, quel goût a-t-il ?",
+        "answers": ["Vanille", "Eau", "Coton", "Arcs-en-ciel"],
+        "correctIndex": 1
+    },
+
+    {
+        "question": "Pourquoi le ciel est-il bleu et pas, disons, violet à pois roses ?",
+        "answers": ["Parce que le violet était en rupture de stock", "Les nuages l'ont décidé", "Les oiseaux préfèrent le bleu", "Parce que c’est comme ça"],
+        "correctIndex": 3
+    },
+
+
+    {
+            "question": "Dans le droit international, quel principe interdit aux États d’intervenir dans les affaires intérieures d’un autre État souverain ?",
+            "answers": ["Principe de non-ingérence", "Principe de souveraineté", "Doctrine de Monroe", "Principe de territorialité"],
+            "correctIndex": 0
+        },
+        {
+            "question": "En droit civil, quel terme désigne la réparation d'un dommage causé par une action ou une omission d’une personne, intentionnelle ou non ?",
+            "answers": ["Responsabilité pénale", "Responsabilité civile", "Culpabilité", "Dommages et intérêts"],
+            "correctIndex": 1
+        },
+        {
+            "question": "Quel principe du droit pénal interdit de punir quelqu’un pour une action qui n’était pas illégale au moment où elle a été commise ?",
+            "answers": ["Nemo judex in causa sua", "Ex post facto", "Nul n'est censé ignorer la loi", "Non bis in idem"],
+            "correctIndex": 1
+        },
+        {
+            "question": "Dans l'affaire célèbre *Brown v. Board of Education*, quelle doctrine légale fut déclarée inconstitutionnelle par la Cour suprême des États-Unis ?",
+            "answers": ["Separate but equal", "Due process", "Freedom of speech", "Right to privacy"],
+            "correctIndex": 0
+        },
+        {
+            "question": "En droit des contrats, quelle est la notion clé impliquant qu’un contrat peut être annulé si une des parties a été contrainte d’accepter les termes sous la menace ?",
+            "answers": ["Erreur", "Dol", "Vice du consentement", "Contrat de bonne foi"],
+            "correctIndex": 2
+        },
+        {
+            "question": "Dans le droit de la propriété intellectuelle, combien de temps dure en général la protection d’un brevet aux États-Unis après son dépôt ?",
+            "answers": ["10 ans", "15 ans", "20 ans", "25 ans"],
+            "correctIndex": 2
+        },
+        {
+            "question": "En droit international humanitaire, quelle convention régit la protection des prisonniers de guerre ?",
+            "answers": ["Convention de La Haye", "Convention de Vienne", "Convention de Genève", "Convention de Rome"],
+            "correctIndex": 2
+        },
+        {
+            "question": "Quel concept juridique de la common law permet à un tribunal d’annuler une décision antérieure jugée incorrecte, créant ainsi un nouveau précédent ?",
+            "answers": ["Stare decisis", "Res judicata", "Writ of certiorari", "Overruling"],
+            "correctIndex": 3
+        },
+        {
+            "question": "Dans un procès, quel est le terme pour le fardeau de prouver un fait ou une accusation ?",
+            "answers": ["Devoir de diligence", "Responsabilité contractuelle", "Charge de la preuve", "Responsabilité civile"],
+            "correctIndex": 2
+        },
+        {
+            "question": "En droit des sociétés, quel type de société est caractérisé par une responsabilité limitée de ses actionnaires mais non négociable sur les marchés publics ?",
+            "answers": ["Société par actions", "Société à responsabilité limitée (SARL)", "Entreprise individuelle", "Société en nom collectif"],
+            "correctIndex": 1
+        },
+
+
+    {
         "question": "Quelle est la capitale de la France ?",
         "answers": ["Berlin", "Madrid", "Paris", "Rome"],
         "correctIndex": 2
@@ -18,5 +109,140 @@
         "question": "Quelle est la couleur de l'eau ?",
         "answers": ["Orange", "Transparent", "Violet", "Bleu"],
         "correctIndex": 1
-    }
+    },
+    {
+        "question": "Quel est le nombre total de chromosomes dans une cellule humaine normale ?",
+        "answers": ["23", "46", "52", "60"],
+        "correctIndex": 1
+    },
+    {
+        "question": "Combien de jours y a-t-il dans une semaine ?",
+        "answers": ["5", "6", "7", "8"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Qui a développé la théorie de la relativité restreinte ?",
+        "answers": ["Isaac Newton", "Nikola Tesla", "Albert Einstein", "Marie Curie"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Dans quelle ville a été signé le traité qui a mis fin à la Première Guerre mondiale ?",
+        "answers": ["Paris", "Nuremberg", "Versailles", "Berlin"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Quelle est la planète la plus proche du Soleil ?",
+        "answers": ["Terre", "Mars", "Mercure", "Jupiter"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Quel est le nom du processus par lequel les plantes fabriquent leur propre nourriture en utilisant la lumière du soleil ?",
+        "answers": ["Fermentation", "Respiration", "Photosynthèse", "Chimiosynthèse"],
+        "correctIndex": 2
+    },
+    {
+        "question": "En quelle année la première bombe nucléaire a-t-elle été larguée sur Hiroshima ?",
+        "answers": ["1939", "1941", "1945", "1950"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Quelle est la valeur approximative du nombre Pi (π) à quatre décimales ?",
+        "answers": ["3.1315", "3.1416", "3.1514", "3.1412"],
+        "correctIndex": 1
+    },
+    {
+        "question": "Qui a écrit la pièce de théâtre *Hamlet* ?",
+        "answers": ["Victor Hugo", "Friedrich Nietzsche", "William Shakespeare", "Molière"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Quel animal miaule ?",
+        "answers": ["Chien", "Chat", "Oiseau", "Poisson-Chat"],
+        "correctIndex": 1
+    },
+    {
+        "question": "Quel scientifique a proposé la loi de la gravitation universelle ?",
+        "answers": ["Albert Einstein", "Galileo Galilei", "Isaac Newton", "Nikola Tesla"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Quelle est la distance moyenne entre la Terre et le Soleil, exprimée en millions de kilomètres ?",
+        "answers": ["150", "200", "100", "250"],
+        "correctIndex": 0
+    },
+    {
+        "question": "Quel est l’élément chimique le plus abondant dans l’univers ?",
+        "answers": ["Hydrogène", "Oxygène", "Carbone", "Hélium"],
+        "correctIndex": 0
+    },
+
+    {
+        "question": "Quel est l'instrument de musique à touches blanches et noires ?",
+        "answers": ["Guitare", "Violon", "Piano", "Flûte"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Combien de côtés a un triangle ?",
+        "answers": ["3", "4", "5", "6"],
+        "correctIndex": 0
+    },
+        {
+            "question": "Quel est le modèle de théorie des cordes qui intègre la supersymétrie dans une variété de Calabi-Yau à six dimensions cachées ?",
+            "answers": ["M-théorie", "Théorie des supercordes de type IIB", "Théorie des supercordes de type IIA", "Théorie des supercordes hétérotique E8×E8"],
+            "correctIndex": 3
+        },
+        {
+            "question": "Quelle hypothèse non prouvée postule que les constantes fondamentales de la physique pourraient changer au fil du temps cosmique ?",
+            "answers": ["Constante cosmologique variable", "Hypothèse de Mach", "Hypothèse de variation des constantes", "Hypothèse de non-localité"],
+            "correctIndex": 2
+        },
+        {
+            "question": "Dans la philosophie de l’esprit, quel problème tente de concilier l’expérience subjective de la conscience avec une compréhension objective du cerveau ?",
+            "answers": ["Problème facile de la conscience", "Problème corps-esprit", "Problème difficile de la conscience", "Dualisme cartésien"],
+            "correctIndex": 2
+        },
+        {
+            "question": "Dans quel contexte cosmologique postule-t-on l’existence de 'branes' multidimensionnelles pouvant se rencontrer et déclencher des Big Bangs ?",
+            "answers": ["Théorie des cordes", "Hypothèse du multivers", "Cosmologie branaire", "Théorie des mondes parallèles"],
+            "correctIndex": 2
+        },
+        {
+            "question": "Quelle conjecture avancée en mathématiques propose qu’il existe des ensembles infinis de nombres premiers ayant des différences constantes ?",
+            "answers": ["Conjecture de Goldbach", "Conjecture de Birch et Swinnerton-Dyer", "Conjecture des nombres premiers jumeaux", "Hypothèse de Riemann"],
+            "correctIndex": 2
+        },
+    {
+        "question": "Combien de pingouins faut-il pour changer une ampoule ?",
+        "answers": ["Deux", "Aucun, ils n’ont pas de pouces", "Un seul mais très motivé", "Toute une armée"],
+        "correctIndex": 2
+    },
+        {
+            "question": "Quel concept de mécanique quantique suggère que toutes les configurations possibles de particules existent simultanément dans un 'paysage' mathématique de probabilités ?",
+            "answers": ["Multivers", "Interprétation de Copenhague", "Paysage des cordes", "Interprétation de plusieurs mondes"],
+            "correctIndex": 3
+        },
+        {
+            "question": "En théorie de la complexité, quelle hypothèse de long terme reste non résolue et cherche à savoir si toutes les solutions vérifiables en temps polynomial peuvent aussi être trouvées en temps polynomial ?",
+            "answers": ["Hypothèse de P=NP", "Hypothèse du Chaos", "Hypothèse de la convergence", "Hypothèse du déterminisme algorithmique"],
+            "correctIndex": 0
+        },
+        {
+            "question": "En physique théorique, quelle est la signification exacte de la constante 'α', également connue sous le nom de constante de structure fine ?",
+            "answers": ["Rapport entre la masse de l'électron et du proton", "Mesure de la force électromagnétique", "Rapport des constantes fondamentales dans la force de gravité", "Valeur quantifiée de la force nucléaire forte"],
+            "correctIndex": 1
+        },
+        {
+            "question": "Dans la cosmologie, quel est le terme pour le scénario hypothétique où la densité de l'énergie noire augmente au point de disloquer toute structure dans l'univers ?",
+            "answers": ["Big Crunch", "Big Bang", "Big Freeze", "Big Rip"],
+            "correctIndex": 3
+        },
+        {
+            "question": "En logique mathématique, quel théorème a démontré qu'il est impossible de prouver la cohérence de certains systèmes arithmétiques depuis l'intérieur du système lui-même ?",
+            "answers": ["Théorème de Gödel sur l'incomplétude", "Théorème de Löwenheim-Skolem", "Théorème de Cantor", "Théorème de Zermelo"],
+            "correctIndex": 0
+        }
+
+
+
+
 ]

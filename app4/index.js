@@ -26,6 +26,7 @@ app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
 app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html'));
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
+app.get('css/style.css', (req, res) => res.sendFile(__dirname + '/public/css/style.css'));
 
 function startTimer() {
     timeLeft = 15; // Durée initiale en secondes
