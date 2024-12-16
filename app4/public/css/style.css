@@ -41,3 +41,26 @@ html, body {
 
 }
 
+#buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+}
+#buttons button {
+
+    padding: 20px;
+    text-align: center;
+    margin: 10px 0;
+}
+button {
+    border: 1px solid #000;
+    background-color: transparent;
+}
+button:disabled {
+    background: rgba(211,47,47, 0.3);
+    color: black;
+    border: 1px solid grey;
+}
+
