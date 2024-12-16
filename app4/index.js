@@ -19,6 +19,7 @@ let room;
 fs.readFile('questions.json', 'utf8', (err, data) => {
     if (err) throw err;
     questions = JSON.parse(data);
+    questions.sort(() => Math.random() - 0.5);
 });
 
 // Route pour servir les fichiers statiques
