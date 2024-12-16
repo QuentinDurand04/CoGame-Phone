@@ -10,5 +10,8 @@
     "type": "git",
     "url": "https://github.com/QuentinDurand04/CoGame-Phone.git"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "express": "^4.21.1"
+  }
 }
