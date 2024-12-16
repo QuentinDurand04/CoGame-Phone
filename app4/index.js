@@ -29,6 +29,7 @@ app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
 app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html'));
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
 app.get('/accueil', (req, res) => res.sendFile(__dirname + '/public/accueil.html'));
+app.get('css/style.css', (req, res) => res.sendFile(__dirname + '/public/css/style.css'));
 
 function startTimer() {
     if (isTimerRunning) return;

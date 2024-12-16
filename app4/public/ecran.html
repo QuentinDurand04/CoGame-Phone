@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Écran Principal</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script>
@@ -26,7 +27,7 @@
                 $('#question').text(data.question);
                 $('#answers').empty();
                 data.answers.forEach((answer, index) => {
-                    $('#answers').append('<li>' + answer + '</li>');
+                    $('#answers').append('<div> ' + answer + '</div>');
                 });
                 $('#timer').text(15);
             });
@@ -53,7 +54,7 @@
 
             // Afficher la bonne réponse
             socket.on('revealAnswer', (correctIndex) => {
-                $('#answers div').eq(correctIndex).css('color', 'green');
+                $('#answers div').eq(correctIndex).css('background-color', 'green');
             });
         });
     </script>
@@ -70,6 +71,9 @@
 <button id="startGameButton">Démarrer la partie</button>
 <button id="stopGameButton">Arreter la partie</button>
 <h2 id="question">En attente de joueurs...</h2>
+<div class="grid">
+<div id="questiongrid"><h2 id="question">En attente de joueurs...</h2></div>
 <ul id="answers"></ul>
+</div>
 </body>
 </html>
