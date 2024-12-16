@@ -77,6 +77,12 @@ function revealAnswer() {
 
 room = Math.floor(Math.random() * 1000);
 io.on('connection', (socket) => {
+    let isController = true;
+    io.emit('idRoom', room);
+});
+
+
+io.on('connection', (socket) => {
     let isController = false;
 
     socket.on('identify', (type) => {
@@ -84,7 +90,6 @@ io.on('connection', (socket) => {
             socket.join(room);
             isController = true;
             players.add(socket.id);
-            io.emit('idRoom', room);
             io.emit('updatePlayerCount', players.size);
             if (!isGameStarted && players.size < 1) {
                 io.emit('waitingForHost'); // Envoie "En attente de l'hôte" à la manette
@@ -124,6 +129,7 @@ io.on('connection', (socket) => {
     socket.on('stopGame', () => {
         console.log("1");
         io.emit('waitingForHost', 'En attente de l\' hôte...');
+        console.log("158");
         isTimerRunning = false;
         resetTimer();
         resetQuestion();
