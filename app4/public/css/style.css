@@ -41,3 +41,20 @@ html, body {
 
 }
 
+#buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+}
+#buttons button {
+    border: 1px solid #000;
+    padding: 20px;
+    text-align: center;
+    margin: 10px 0;
+}
+button {
+    background-color: transparent;
+}
+
