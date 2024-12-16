@@ -12,6 +12,8 @@ let responses = {};
 let timer;
 let timeLeft = 15;
 let isTimerRunning = false;
+let isGameStarted = false;
+let room;
 
 // Charger les questions depuis le fichier JSON
 fs.readFile('questions.json', 'utf8', (err, data) => {
@@ -26,6 +28,7 @@ app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
 app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html'));
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
+app.get('/accueil', (req, res) => res.sendFile(__dirname + '/public/accueil.html'));
 
 function startTimer() {
     if (isTimerRunning) return;
@@ -41,7 +44,7 @@ function startTimer() {
         if (timeLeft <= 0) {
             clearInterval(timer);
             revealAnswer();
-            setTimeout(nextQuestion, 4000); // Passer à la question suivante après 4 secondes
+            setTimeout(nextQuestion, 2000); // Passer à la question suivante après 2 secondes
         }
     }, 1000);
 }
@@ -52,8 +55,8 @@ function resetTimer() {
     io.emit('updateTimer', timeLeft); // Envoie l'état figé du timer à 15 secondes
 }
 
-function resetQuestion(){
-    io.emit('newQuestion', { question: "En attente de joueurs...", answers: [] });
+function resetQuestion() {
+    io.emit('newQuestion', {question: "En attente de joueurs...", answers: []});
 }
 
 function nextQuestion() {
@@ -71,19 +74,26 @@ function revealAnswer() {
     io.emit('revealAnswer', correctIndex);
 }
 
+room = Math.floor(Math.random() * 1000);
 io.on('connection', (socket) => {
     let isController = false;
 
     socket.on('identify', (type) => {
         if (type === 'manette') {
+            socket.join(room);
             isController = true;
             players.add(socket.id);
+            io.emit('idRoom', room);
             io.emit('updatePlayerCount', players.size);
-            sendCurrentQuestion();
-            if (!isTimerRunning) {
+            if (!isGameStarted && players.size < 1) {
+                io.emit('waitingForHost'); // Envoie "En attente de l'hôte" à la manette
+            } else {
                 sendCurrentQuestion();
-                startTimer();
+                //startTimer(); // Envoie la question actuelle si le jeu a démarré
             }
+            /*if (!isTimerRunning) {
+
+            }*/
         }
     });
 
@@ -97,9 +107,26 @@ io.on('connection', (socket) => {
                 clearInterval(timer); // Arrêter le timer
                 io.emit('updateTimer', 0); // Mettre le timer et la barre de progression à 0
                 revealAnswer();
-                setTimeout(nextQuestion, 4000); // Passer à la question suivante après 4 secondes
+                setTimeout(nextQuestion, 3000); // Passer à la question suivante après 4 secondes
             }
         }
+    });
+
+    socket.on('startGame', () => {
+        if (!isGameStarted && players.size > 0) {
+            isGameStarted = true;
+            nextQuestion(); // Lancer la première question
+
+        }
+    });
+
+    socket.on('stopGame', () => {
+        console.log("1");
+        io.emit('waitingForHost', 'En attente de l\' hôte...');
+        isTimerRunning = false;
+        resetTimer();
+        resetQuestion();
+        isGameStarted = false;
     });
 
     socket.on('disconnect', () => {
@@ -111,6 +138,7 @@ io.on('connection', (socket) => {
                 isTimerRunning = false;
                 resetTimer();
                 resetQuestion();
+                isGameStarted = false;
             }
         }
     });
@@ -118,12 +146,14 @@ io.on('connection', (socket) => {
 
 
 function sendCurrentQuestion() {
-    const questionData = questions[currentQuestionIndex];
-    responses = {}; // Réinitialiser les réponses pour la nouvelle question
-    io.emit('newQuestion', {
-        question: questionData.question,
-        answers: questionData.answers
-    });
+    if (isGameStarted) {
+        const questionData = questions[currentQuestionIndex];
+        responses = {};
+        io.emit('newQuestion', {
+            question: questionData.question,
+            answers: questionData.answers
+        });
+    }
 }
 
 
