@@ -29,6 +29,9 @@ app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
 app.get('css/style.css', (req, res) => res.sendFile(__dirname + '/public/css/style.css'));
 
 function startTimer() {
+    if (isTimerRunning) return;
+    isTimerRunning = true;
+
     timeLeft = 15; // Durée initiale en secondes
     io.emit('updateTimer', timeLeft); // Envoyer la valeur initiale du timer
 
@@ -59,6 +62,7 @@ function nextQuestion() {
     responses = {}; // Réinitialiser les réponses
     io.emit('newQuestion', questions[currentQuestionIndex]);
     io.emit('updateResponseCount', 0); // Réinitialiser le compteur de réponses
+    isTimerRunning = false;
     startTimer(); // Lancer le minuteur pour la nouvelle question
 }
 
@@ -105,6 +109,7 @@ io.on('connection', (socket) => {
             delete responses[socket.id];
             io.emit('updatePlayerCount', players.size);
             if (players.size === 0) {
+                isTimerRunning = false;
                 resetTimer();
                 resetQuestion();
             }
