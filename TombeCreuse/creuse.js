@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function drawLave() {
         lave = new Image();
-        lave.src = './images/lave.webp';
+        lave.src = './images/lave.jpg';
         if (frameCount % 90 === 0) {
             const pipeWidth = Math.floor(Math.random() * (canvas.width - LaveEcart));
             Lave.push({ y: canvas.height, x: pipeWidth });
