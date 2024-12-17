@@ -32,9 +32,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const LaveHauteur = 20;
     const LaveEcart = 100;
     let frameCount = 0;
+    let speed = 2;
 
     function drawLave() {
-        lave = new Image();
+        let lave = new Image();
         lave.src = './images/lave.jpg';
         if (frameCount % 90 === 0) {
             const pipeWidth = Math.floor(Math.random() * (canvas.width - LaveEcart));
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = Lave.length - 1; i >= 0; i--) {
             ctx.drawImage(lave, 0, 0, 500, 500, 0, Lave[i].y, Lave[i].x, LaveHauteur);
             ctx.drawImage(lave, 0, 0, 500, 500, Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
-            Lave[i].y -= 2;
+            Lave[i].y -= speed;
             if (Lave[i].y + LaveHauteur < 0) {
                 Lave.splice(i, 1);
             }
@@ -71,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         frameCount++;
+        if (frameCount % 60 === 0) {
+            speed += 0.2; // More gradual speed increase
+        }
         requestAnimationFrame(draw);
     }
 
