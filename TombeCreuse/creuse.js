@@ -2,6 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('slider');
+    const speedDisplay = document.getElementById('speed');
+    const scoreDisplay = document.getElementById('score');
+    let score = 1;
+    speedDisplay.innerHTML = 'Speed : 2';
+    let trail = [];
+    const maxTrailLength = 70; // Adjust the length of the trail
     const Fossoyeur = {
         x: 150,
         y: 50,
@@ -9,8 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
         height: 20,
         velocity: 0,
         show: function() {
-            ctx.fillStyle = 'grey';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            let img = new Image();
+            img.src = './images/drill.jpg';
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
         },
         update: function() {
             this.x += this.velocity;
@@ -64,17 +71,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Add current position to the trail
+        trail.push({ x: Fossoyeur.x, y: Fossoyeur.y });
+        if (trail.length > maxTrailLength) {
+            trail.shift();
+        }
+        // Draw the trail
+        ctx.beginPath();
+        for (let i = 0; i < trail.length; i++) {
+            ctx.fillStyle = 'rgba(255, 255, 255, ' + (i / (trail.length*4)) + ')'; // Fade effect
+            ctx.fillRect(trail[i].x, trail[i].y--, Fossoyeur.width, Fossoyeur.height);
+        }
+
         Fossoyeur.show();
         Fossoyeur.update();
         drawLave();
         if (checkCollision()) {
-            alert('Game Over');
+            alert('Game Over, score : ' + Math.floor(score));
             return;
         }
         frameCount++;
-        if (frameCount % 60 === 0) {
-            speed += 0.2; // More gradual speed increase
+        if (frameCount % 200 === 0) {
+            speed += 0.6; // More gradual speed increase
+            speedDisplay.innerHTML = 'Speed : ' + speed;
         }
+        score += 0.5;
+        scoreDisplay.innerHTML = 'Score : ' + Math.floor(score);
         requestAnimationFrame(draw);
     }
 
