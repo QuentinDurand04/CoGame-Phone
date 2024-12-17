@@ -7,14 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
         y: 50,
         width: 20,
         height: 20,
-        gravity: 0,
         velocity: 0,
         show: function() {
             ctx.fillStyle = 'grey';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         },
         update: function() {
-            this.velocity += this.gravity;
             this.x += this.velocity;
             if (this.x > canvas.width - this.width) {
                 this.x = canvas.width - this.width;
@@ -36,14 +34,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let frameCount = 0;
 
     function drawLave() {
+        lave = new Image();
+        lave.src = './images/lave.jpg';
         if (frameCount % 90 === 0) {
             const pipeWidth = Math.floor(Math.random() * (canvas.width - LaveEcart));
             Lave.push({ y: canvas.height, x: pipeWidth });
         }
         for (let i = Lave.length - 1; i >= 0; i--) {
-            ctx.fillStyle = 'orange';
-            ctx.fillRect(0, Lave[i].y, Lave[i].x, LaveHauteur);
-            ctx.fillRect(Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
+            ctx.drawImage(lave, 0, 0, 500, 500, 0, Lave[i].y, Lave[i].x, LaveHauteur);
+            ctx.drawImage(lave, 0, 0, 500, 500, Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
             Lave[i].y -= 2;
             if (Lave[i].y + LaveHauteur < 0) {
                 Lave.splice(i, 1);
