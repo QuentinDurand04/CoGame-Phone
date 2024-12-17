@@ -104,5 +104,31 @@ document.addEventListener('DOMContentLoaded', function() {
         Fossoyeur.setPosition(parseInt(this.value));
     });
 
+
+    let intervalId = null;
+
+    document.addEventListener('keydown', function(event) {
+        const step = 20; // Adjust the step size as needed
+        if (event.key === 'q' || event.key === 'd') {
+            if (intervalId === null) {
+                intervalId = setInterval(() => {
+                    if (event.key === 'q') {
+                        slider.value = Math.max(0, parseInt(slider.value) - step);
+                    } else if (event.key === 'd') {
+                        slider.value = Math.min(320, parseInt(slider.value) + step);
+                    }
+                    Fossoyeur.setPosition(parseInt(slider.value));
+                }, 40); // Adjust the interval time as needed
+            }
+        }
+    });
+
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'q' || event.key === 'd') {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+    });
+
     draw();
 });
