@@ -13,11 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
         y: 50,
         width: 20,
         height: 20,
+        displayWidth: 40,
+        displayHeight: 40,
         velocity: 0,
         show: function() {
             let img = new Image();
             img.src = './images/drill.jpg';
-            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+            ctx.drawImage(img, this.x - (this.displayWidth - this.width) / 2, this.y - (this.displayHeight - this.height) / 2, this.displayWidth, this.displayHeight);
         },
         update: function() {
             this.x += this.velocity;
@@ -87,12 +89,27 @@ document.addEventListener('DOMContentLoaded', function() {
         Fossoyeur.update();
         drawLave();
         if (checkCollision()) {
-            alert('Game Over, score : ' + Math.floor(score));
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '48px serif';
+            ctx.fillStyle = 'red';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+
+
+            const restartButton = document.createElement('button');
+            restartButton.id = "Restart"
+            restartButton.innerText = 'Restart';
+            document.body.appendChild(restartButton);
+
+            restartButton.addEventListener('click', function() {
+                location.reload();
+            });
+
             return;
         }
         frameCount++;
-        if (frameCount % 200 === 0) {
-            speed += 0.6; // More gradual speed increase
+        if (frameCount % 100 === 0) {
+            speed += 0.3; // More gradual speed increase
             speedDisplay.innerHTML = 'Speed : ' + speed;
         }
         score += 0.5;
@@ -108,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let intervalId = null;
 
     document.addEventListener('keydown', function(event) {
-        const step = 20; // Adjust the step size as needed
+        const step = 5; // Adjust the step size as needed
         if (event.key === 'q' || event.key === 'd') {
             if (intervalId === null) {
                 intervalId = setInterval(() => {
@@ -118,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         slider.value = Math.min(320, parseInt(slider.value) + step);
                     }
                     Fossoyeur.setPosition(parseInt(slider.value));
-                }, 40); // Adjust the interval time as needed
+                }, 10); // Adjust the interval time as needed
             }
         }
     });
