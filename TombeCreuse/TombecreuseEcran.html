@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="./tombecreuse.css">
+    <title>Tombecreuse</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: saddlebrown;
+        }
+        #slider {
+            display: block;
+            margin: 20px auto;
+        }
+
+    </style>
+</head>
+<body>
+    <p id="score">Score : </p>
+    <p id="speed"></p>
+    <canvas id="gameCanvas" width="320" height="480"></canvas>
+    <input type="range" class="slider" id="slider" min="0" max="320" value="150">
+    <script src="./creuse.js"></script>
+</body>
+</html>
