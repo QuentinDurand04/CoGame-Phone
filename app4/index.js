@@ -43,7 +43,7 @@ app.get('/BasQiZ/manette', (req, res) => {
     if (idRoom && name) {
         res.sendFile(__dirname + '/public/manette.html');
     } else {
-        res.redirect('/choix');
+        res.redirect('/BasQiZ/choix');
     }
 });
 app.get('/BasQiZ/ecran', (req, res) => {
