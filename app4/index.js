@@ -37,8 +37,8 @@ app.use(express.static('public'));
 
 // Routes principales
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
-app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
-app.get('/manette', (req, res) => {
+app.get('/BasQiZ/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
+app.get('/BasQiZ/manette', (req, res) => {
     const { idRoom, name } = req.query;
     if (idRoom && name) {
         res.sendFile(__dirname + '/public/manette.html');
@@ -46,12 +46,12 @@ app.get('/manette', (req, res) => {
         res.redirect('/choix');
     }
 });
-app.get('/ecran', (req, res) => {
+app.get('/BasQiZ/ecran', (req, res) => {
     const { idRoom } = req.query;
     if (idRoom) {
         res.sendFile(__dirname + '/public/ecran.html');
     } else {
-        res.redirect('/choix');
+        res.redirect('/BasQiZ/choix');
     }
 });
 app.get('/accueil', (req, res) => res.sendFile(__dirname + '/public/accueil.html'));
