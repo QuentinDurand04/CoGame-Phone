@@ -6,9 +6,14 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script>
-        $(function () {
+            $(function () {
             const socket = io();
             socket.emit('identify', 'ecran');
+
+            socket.on('idRoom', (room) => {
+                console.log("idRoom affiché ?");
+                $('#room').text('ID de la salle : ' + room);
+            });
 
             $('#startGameButton').click(() => {
                 socket.emit('startGame'); // Émettre un événement pour démarrer le jeu
@@ -16,10 +21,6 @@
 
             $('#stopGameButton').click(() => {
                 socket.emit('stopGame'); // Émettre un événement pour arreter le jeu
-            });
-
-            socket.on('idRoom', (room) => {
-                $('#room').text('id de la room : ' + room);
             });
 
             // Afficher la nouvelle question
@@ -35,7 +36,9 @@
             // Mettre à jour le nombre de joueurs et de réponses
             socket.on('updatePlayerCount', (count) => {
                 $('#playerCount').text('Joueurs dans la partie : ' + count);
+                console.log("joueur dans la partie");
             });
+            
             socket.on('updateResponseCount', (count) => {
                 $('#responseCount').text('Réponses reçues : ' + count);
             });
@@ -56,10 +59,22 @@
             socket.on('revealAnswer', (correctIndex) => {
                 $('#answers div').eq(correctIndex).css('background-color', 'green');
             });
+
         });
+
+        function room() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idRoom = urlParams.get('idRoom');
+    
+            if (idRoom) {
+                document.getElementById('room').textContent = 'ID de la salle : ' + idRoom;
+            }
+        }
+
+
     </script>
 </head>
-<body>
+<body onload="room()">
 <h1>Écran Principal</h1>
 <div id="room">id de la room :</div>
 <div id="playerCount">Joueurs dans la partie : 0</div>

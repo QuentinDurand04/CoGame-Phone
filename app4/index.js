@@ -1,10 +1,19 @@
+// Importation des modules nécessaires
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
-const io = require('socket.io')(server);
+const io = require("socket.io")(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    },
+    pingTimeout: 60000,  // Temps avant déconnexion
+    pingInterval: 25000, // Intervalle de ping
+});
 const fs = require('fs');
 
+// Variables globales
 let questions = [];
 let currentQuestionIndex = 0;
 let players = new Set();
@@ -13,108 +22,139 @@ let timer;
 let timeLeft = 15;
 let isTimerRunning = false;
 let isGameStarted = false;
-let room;
+const rooms = {};
+let isController = false;
 
-// Charger les questions depuis le fichier JSON
+// Charger les questions
 fs.readFile('questions.json', 'utf8', (err, data) => {
     if (err) throw err;
     questions = JSON.parse(data);
     questions.sort(() => Math.random() - 0.5);
 });
 
-// Route pour servir les fichiers statiques
+// Servir les fichiers statiques
 app.use(express.static('public'));
 
+// Routes principales
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
-app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html'));
-app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
+app.get('/manette', (req, res) => {
+    const { idRoom, name } = req.query;
+    if (idRoom && name) {
+        res.sendFile(__dirname + '/public/manette.html');
+    } else {
+        res.redirect('/choix');
+    }
+});
+app.get('/ecran', (req, res) => {
+    const { idRoom } = req.query;
+    if (idRoom) {
+        res.sendFile(__dirname + '/public/ecran.html');
+    } else {
+        res.redirect('/choix');
+    }
+});
 app.get('/accueil', (req, res) => res.sendFile(__dirname + '/public/accueil.html'));
-app.get('css/style.css', (req, res) => res.sendFile(__dirname + '/public/css/style.css'));
 
+// Gestion du timer
 function startTimer() {
     if (isTimerRunning) return;
     isTimerRunning = true;
 
-    timeLeft = 15; // Durée initiale en secondes
-    io.emit('updateTimer', timeLeft); // Envoyer la valeur initiale du timer
+    timeLeft = 15;
+    io.emit('updateTimer', timeLeft);
 
     timer = setInterval(() => {
         timeLeft -= 1;
-        io.emit('updateTimer', timeLeft); // Mettre à jour le timer sur les clients
+        io.emit('updateTimer', timeLeft);
 
         if (timeLeft <= 0) {
             clearInterval(timer);
             revealAnswer();
-            setTimeout(nextQuestion, 2000); // Passer à la question suivante après 2 secondes
+            setTimeout(nextQuestion, 2000);
         }
     }, 1000);
 }
 
 function resetTimer() {
-    clearInterval(timer); // Arrête tout décompte en cours
-    timeLeft = 15; // Durée initiale en secondes
-    io.emit('updateTimer', timeLeft); // Envoie l'état figé du timer à 15 secondes
+    clearInterval(timer);
+    timeLeft = 15;
+    io.emit('updateTimer', timeLeft);
 }
 
 function resetQuestion() {
-    io.emit('newQuestion', {question: "En attente de joueurs...", answers: []});
+    io.emit('newQuestion', { question: "En attente de joueurs...", answers: [] });
 }
 
 function nextQuestion() {
     currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-    responses = {}; // Réinitialiser les réponses
+    responses = {};
     io.emit('newQuestion', questions[currentQuestionIndex]);
-    io.emit('updateResponseCount', 0); // Réinitialiser le compteur de réponses
+    io.emit('updateResponseCount', 0);
     isTimerRunning = false;
-    startTimer(); // Lancer le minuteur pour la nouvelle question
+    startTimer();
 }
 
 function revealAnswer() {
-    clearInterval(timer); // Arrêter le minuteur si la réponse est révélée avant la fin
+    clearInterval(timer);
     const correctIndex = questions[currentQuestionIndex].correctIndex;
     io.emit('revealAnswer', correctIndex);
 }
 
-room = Math.floor(Math.random() * 1000);
+// Gestion des événements Socket.IO
 io.on('connection', (socket) => {
-    let isController = true;
-    io.emit('idRoom', room);
-});
+    // Lors de la création de la room
+    socket.on('createRoom', () => {
+        const roomID = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+        rooms[roomID] = { players: [], host: socket.id };
+        socket.join(roomID);
+        
+        // Envoyer l'ID à choix.html
+        socket.emit('idRoom', roomID);  
+
+        console.log(`Salle créée avec l'ID ${roomID}`);
+    });
 
 
-io.on('connection', (socket) => {
-    let isController = false;
+    // Lorsqu'un joueur rejoint une room
+    socket.on('joinRoom', ({ name, idRoomJ }) => {
+        // Vérifie si la salle existe
+        if (rooms[idRoomJ]) {
 
-    socket.on('identify', (type) => {
-        if (type === 'manette') {
-            socket.join(room);
-            isController = true;
-            players.add(socket.id);
-            io.emit('updatePlayerCount', players.size);
-            if (!isGameStarted && players.size < 1) {
-                io.emit('waitingForHost'); // Envoie "En attente de l'hôte" à la manette
-            } else {
-                sendCurrentQuestion();
-                //startTimer(); // Envoie la question actuelle si le jeu a démarré
-            }
-            /*if (!isTimerRunning) {
+        // Vérifie si le joueur est déjà dans la salle
+        if (!rooms[idRoomJ].players.includes(socket.id)) {
 
-            }*/
+            // Rejoint la salle et ajoute le joueur
+            socket.join(idRoomJ);
+            rooms[idRoomJ].players.push(socket.id);
+
+            // Mettez à jour le nombre de joueurs
+            io.to(idRoomJ).emit('updatePlayerCount', rooms[idRoomJ].players.length);
+
+            console.log(`Joueur ${socket.id} rejoint la salle ${idRoomJ}`);
+            console.log(`Nombre de joueurs : ${rooms[idRoomJ].players.length}`);
+        } else {
+            console.log(`Joueur ${name} est déjà dans la salle ${idRoomJ}`);
+        }
+        } else {
+        // Signale que la salle est introuvable
+        socket.emit('error', 'Salle non trouvée');
+        console.log(`Tentative de connexion à une salle inexistante : ${idRoomJ}`);
         }
     });
+
+
 
     socket.on('response', (answerIndex) => {
         if (isController && !responses[socket.id]) {
             responses[socket.id] = answerIndex;
             io.emit('updateResponseCount', Object.keys(responses).length);
 
-            // Vérifier si tous les joueurs ont répondu
             if (Object.keys(responses).length === players.size) {
-                clearInterval(timer); // Arrêter le timer
-                io.emit('updateTimer', 0); // Mettre le timer et la barre de progression à 0
+                clearInterval(timer);
+                io.emit('updateTimer', 0);
                 revealAnswer();
-                setTimeout(nextQuestion, 3000); // Passer à la question suivante après 4 secondes
+                setTimeout(nextQuestion, 3000);
             }
         }
     });
@@ -122,49 +162,49 @@ io.on('connection', (socket) => {
     socket.on('startGame', () => {
         if (!isGameStarted && players.size > 0) {
             isGameStarted = true;
-            nextQuestion(); // Lancer la première question
-
+            nextQuestion();
         }
     });
 
     socket.on('stopGame', () => {
-        console.log("1");
-        io.emit('waitingForHost', 'En attente de l\' hôte...');
-        console.log("158");
+        io.emit('waitingForHost', 'En attente de l\'hôte...');
         isTimerRunning = false;
         resetTimer();
         resetQuestion();
         isGameStarted = false;
     });
 
-    socket.on('disconnect', () => {
-        if (isController) {
-            players.delete(socket.id);
-            delete responses[socket.id];
-            io.emit('updatePlayerCount', players.size);
-            if (players.size === 0) {
-                isTimerRunning = false;
-                resetTimer();
-                resetQuestion();
-                isGameStarted = false;
+    /*socket.on('disconnect', () => {
+        console.log(`Joueur ${socket.id} déconnecté de la salle`);
+        for (const roomID in rooms) {
+            const room = rooms[roomID];
+            
+            if (room.players.includes(socket.id)) {
+                // Supprimer le joueur de la salle
+                room.players = room.players.filter(id => id !== socket.id);
+                players.delete(socket.id); 
+    
+                // Mettre à jour le compteur de joueurs
+                io.to(roomID).emit('updatePlayerCount', room.players.length);
+                console.log(`Joueur ${socket.id} déconnecté de la salle ${roomID}`);
+                
+                // Supprimer la salle si plus personne
+                if (room.players.length === 0 && room.host === socket.id) {
+                    delete rooms[roomID];
+                    console.log(`Salle ${roomID} supprimée.`);
+                }
             }
         }
+    });*/
+
+    socket.on('disconnect', (reason) => {
+        console.log(`Déconnexion de ${socket.id}, raison : ${reason}`);
     });
+    
+    
 });
 
-
-function sendCurrentQuestion() {
-    if (isGameStarted) {
-        const questionData = questions[currentQuestionIndex];
-        responses = {};
-        io.emit('newQuestion', {
-            question: questionData.question,
-            answers: questionData.answers
-        });
-    }
-}
-
-
+// Démarrage du serveur
 server.listen(8001, () => {
     console.log("Server is running on http://localhost:8001");
 });

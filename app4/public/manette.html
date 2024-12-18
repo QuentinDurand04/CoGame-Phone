@@ -13,9 +13,7 @@
       socket.emit('identify', 'manette');
 
       socket.on('waitingForHost', (text) => {
-        console.log("2");
         $('#buttons').text(text);
-        console.log("3");
       });
 
       // Afficher les réponses pour chaque nouvelle question
