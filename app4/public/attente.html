@@ -8,13 +8,13 @@
 
         // Recevoir l'événement startGame pour rediriger vers la route /manette
         socket.on('startGame', () => {
-            window.location.href = '/manette';
+            window.location.href = '/BasQiZ/manette';
         });
 
         // Gestion d'erreur pour le cas où le code PIN n'est pas valide
         socket.on('error', (message) => {
             alert(message);
-            window.location.href = '/choix';
+            window.location.href = '/BasQiZ/choix';
         });
     </script>
 </head>

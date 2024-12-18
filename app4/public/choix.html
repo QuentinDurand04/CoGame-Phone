@@ -22,7 +22,7 @@
     document.getElementById("createScreenButton").addEventListener("click", () => {
         socket.emit("createRoom");  // Demande de création de room
         socket.on("idRoom", (room) => {
-            window.location.href = `/ecran?idRoom=${room}`;  // Redirection avec l'ID généré
+            window.location.href = `/BasQiZ/ecran?idRoom=${room}`;  // Redirection avec l'ID généré
         });
     });
 
@@ -33,7 +33,7 @@
 
         if (idRoomJ && name) {
             socket.emit("joinRoom", { idRoomJ, name });
-            window.location.href = `/manette?idRoom=${idRoomJ}&name=${name}`;
+            window.location.href = `/BasQiZ/manette?idRoom=${idRoomJ}&name=${name}`;
         } else {
             alert("Veuillez remplir les deux champs.");
         }
