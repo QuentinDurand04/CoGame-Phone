@@ -61,15 +61,15 @@ app.get('/admin', (req, res) => {
     if (idRoom) {
         res.sendFile(__dirname + '/public/html/admin.html');
     } else {
-        res.redirect('/choix');
+        res.redirect('/BasQiZ/choix');
     }
 });
-app.get('/ecran', (req, res) => {
+app.get('/BasQiZ/ecran', (req, res) => {
     const { idRoom } = req.query;
     if (idRoom) {
         res.sendFile(__dirname + '/public/html/ecran.html');
     } else {
-        res.redirect('/choix');
+        res.redirect('/BasQiZ/choix');
     }
 });
 

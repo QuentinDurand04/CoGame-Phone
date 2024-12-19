@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <title>Manette</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" type="text/css" href="../css/style.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script>
+    $(function () {
+      const socket = io();
+      let selectedButtonIndex = null; // Variable pour stocker l'index du bouton cliqué
+
+      socket.emit('identify', 'manette');
+
+      socket.on('waitingForHost', (text) => {
+        $('#buttons').text(text);
+      });
+
+      // Afficher les réponses pour chaque nouvelle question
+      socket.on('newQuestion', (data) => {
+        $('#buttons').empty();
+        selectedButtonIndex = null; // Réinitialiser le bouton sélectionné
+
+        data.answers.forEach((answer, index) => {
+          const button = $('<button>')
+                  .text(answer)
+                  .attr('id', 'btn' + index)
+                  .click(() => {
+                    // Envoyer la réponse sélectionnée au serveur avec l'index
+                    socket.emit('response', index);
+                    selectedButtonIndex = index; // Mémoriser le bouton cliqué
+                    $('button').prop('disabled', true); // Désactiver tous les boutons après un clic
+                  });
+          $('#buttons').append(button);
+        });
+      });
+
+      // Afficher le retour visuel selon si la réponse est correcte ou incorrecte
+      socket.on('revealAnswer', (correctIndex) => {
+        $('#buttons button').each(function (index) {
+          if (index === selectedButtonIndex) {
+            if (index === correctIndex) {
+              $(this).css('background-color', 'green'); // Vert pour la bonne réponse sélectionnée
+            } else {
+              $(this).css('background-color', 'red'); // Rouge pour la mauvaise réponse sélectionnée
+            }
+          } else if (index === correctIndex) {
+            $(this).css('background-color', 'green'); // Vert pour la bonne réponse
+          }
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+<h1>Manette</h1>
+<div id="buttons">En attente du démarrage de la partie...</div>
+</body>
+</html>
