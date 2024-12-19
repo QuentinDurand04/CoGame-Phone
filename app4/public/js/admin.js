@@ -1,11 +1,5 @@
-<!doctype html>
-<html>
-<head>
-    <title>Écran Principal</title>
-    <link rel="stylesheet" type="text/css" href="./css/style.css">
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script>
+let joueurs = [];  // Tableau pour stocker les noms des joueurs
+
             $(function () {
             const socket = io();
             socket.emit('identify', 'ecran');
@@ -34,9 +28,18 @@
             });
 
             // Mettre à jour le nombre de joueurs et de réponses
-            socket.on('updatePlayerCount', (count) => {
-                $('#playerCount').text('Joueurs dans la partie : ' + count);
-                console.log("joueur dans la partie");
+            socket.on('updatePlayerCount', (count, nom) => {
+                $('#playerCount').text('Nombres de joueurs dans la partie : ' + count);
+                if (!joueurs.includes(nom)) {
+                    joueurs.push(nom);  // Ajoute le nom s'il n'existe pas encore
+                } else {
+                    const index = joueurs.indexOf(nom);  // Trouve l'index du nom
+                    if (index !== -1) {
+                        joueurs.splice(index, 1);  // Supprime l'élément à cet index
+                    }
+                }
+                // Met à jour l'affichage avec tous les noms
+                $('#joueurs').html('Nom des joueurs dans la partie :<br>' + joueurs.join('<br>'));
             });
             
             socket.on('updateResponseCount', (count) => {
@@ -71,23 +74,8 @@
             }
         }
 
-
-    </script>
-</head>
-<body onload="room()">
-<h1>Écran Principal</h1>
-<div id="room">id de la room :</div>
-<div id="playerCount">Joueurs dans la partie : 0</div>
-<div id="responseCount">Réponses reçues : 0</div>
-<div>
-    <h2>Temps restant : <span id="timer">15</span> secondes</h2>
-</div>
-<progress id="file" max="15" value=15></progress>
-<button id="startGameButton">Démarrer la partie</button>
-<button id="stopGameButton">Arreter la partie</button>
-<div class="grid">
-<div id="questiongrid"><h2 id="question">En attente de joueurs...</h2></div>
-<ul id="answers"></ul>
-</div>
-</body>
-</html>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("retour").addEventListener("click", () => {
+                window.location.href = `/`;
+            });
+        });

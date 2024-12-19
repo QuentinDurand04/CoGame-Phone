@@ -24,6 +24,7 @@ let isTimerRunning = false;
 let isGameStarted = false;
 const rooms = {};
 let isController = false;
+let nbJoueur = 0;
 
 // Charger les questions
 fs.readFile('questions.json', 'utf8', (err, data) => {
@@ -36,12 +37,29 @@ fs.readFile('questions.json', 'utf8', (err, data) => {
 app.use(express.static('public'));
 
 // Routes principales
-app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
-app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/choix.html'));
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/html/index.html'));
+app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/html/choix.html'));
 app.get('/manette', (req, res) => {
     const { idRoom, name } = req.query;
     if (idRoom && name) {
-        res.sendFile(__dirname + '/public/manette.html');
+        res.sendFile(__dirname + '/public/html/manette.html');
+    } else {
+        res.redirect('/nom');
+    }
+});
+app.get('/nom', (req, res) => {
+    const { idRoom } = req.query;
+    if (idRoom) {
+        res.sendFile(__dirname + '/public/html/nom.html');
+    } else {
+        res.redirect('/choix');
+    }
+});
+
+app.get('/admin', (req, res) => {
+    const { idRoom } = req.query;
+    if (idRoom) {
+        res.sendFile(__dirname + '/public/html/admin.html');
     } else {
         res.redirect('/choix');
     }
@@ -49,12 +67,11 @@ app.get('/manette', (req, res) => {
 app.get('/ecran', (req, res) => {
     const { idRoom } = req.query;
     if (idRoom) {
-        res.sendFile(__dirname + '/public/ecran.html');
+        res.sendFile(__dirname + '/public/html/ecran.html');
     } else {
         res.redirect('/choix');
     }
 });
-app.get('/accueil', (req, res) => res.sendFile(__dirname + '/public/accueil.html'));
 
 // Gestion du timer
 function startTimer() {
@@ -117,50 +134,36 @@ io.on('connection', (socket) => {
 
 
     // Lorsqu'un joueur rejoint une room
-    socket.on('joinRoom', ({ name, idRoomJ }) => {
+    socket.on('joinRoom', ({ name, idRoom }) => {
         // Vérifie si la salle existe
-        if (rooms[idRoomJ]) {
-
-        // Vérifie si le joueur est déjà dans la salle
-        if (!rooms[idRoomJ].players.includes(socket.id)) {
-
-            // Rejoint la salle et ajoute le joueur
-            socket.join(idRoomJ);
-            rooms[idRoomJ].players.push(socket.id);
-
+        if (rooms[idRoom]) {
+            nbJoueur++;
+            socket.join(idRoom);
             // Mettez à jour le nombre de joueurs
-            io.to(idRoomJ).emit('updatePlayerCount', rooms[idRoomJ].players.length);
-
-            console.log(`Joueur ${socket.id} rejoint la salle ${idRoomJ}`);
-            console.log(`Nombre de joueurs : ${rooms[idRoomJ].players.length}`);
+            io.emit('updatePlayerCount', nbJoueur, name);
+            console.log(`Joueur ${socket.id} rejoint la salle ${idRoom}`);
+            console.log(`Nombre de joueurs : ${nbJoueur}`);
         } else {
-            console.log(`Joueur ${name} est déjà dans la salle ${idRoomJ}`);
-        }
-        } else {
-        // Signale que la salle est introuvable
-        socket.emit('error', 'Salle non trouvée');
-        console.log(`Tentative de connexion à une salle inexistante : ${idRoomJ}`);
+            console.log(`Salle ${idRoom} non trouvée ou ${name} non défini`);
         }
     });
 
 
 
     socket.on('response', (answerIndex) => {
-        if (isController && !responses[socket.id]) {
             responses[socket.id] = answerIndex;
             io.emit('updateResponseCount', Object.keys(responses).length);
 
-            if (Object.keys(responses).length === players.size) {
+            if (Object.keys(responses).length === nbJoueur) {
                 clearInterval(timer);
                 io.emit('updateTimer', 0);
                 revealAnswer();
                 setTimeout(nextQuestion, 3000);
             }
-        }
     });
 
     socket.on('startGame', () => {
-        if (!isGameStarted && players.size > 0) {
+        if (!isGameStarted && nbJoueur > 0) {
             isGameStarted = true;
             nextQuestion();
         }
@@ -174,32 +177,71 @@ io.on('connection', (socket) => {
         isGameStarted = false;
     });
 
-    /*socket.on('disconnect', () => {
-        console.log(`Joueur ${socket.id} déconnecté de la salle`);
+    socket.on('disconnection', (name) => {
+        console.log(`Déconnexion de ${name}`);
+        nbJoueur--;
         for (const roomID in rooms) {
             const room = rooms[roomID];
             
+            io.emit('updatePlayerCount', nbJoueur, name);
+            console.log(`Nombre de joueurs dans la salle ${roomID}: ${nbJoueur}`);
+
+            if(nbJoueur == 0){
+                isTimerRunning = false;
+                resetTimer();
+                resetQuestion();
+                isGameStarted = false;
+            }
+    /*
+        // Parcourir toutes les salles
+        for (const roomID in rooms) {
+            const room = rooms[roomID];
+    
+            // Vérifier si le joueur est dans la salle
             if (room.players.includes(socket.id)) {
-                // Supprimer le joueur de la salle
+                // Supprimer le joueur de la liste
                 room.players = room.players.filter(id => id !== socket.id);
-                players.delete(socket.id); 
     
                 // Mettre à jour le compteur de joueurs
-                io.to(roomID).emit('updatePlayerCount', room.players.length);
-                console.log(`Joueur ${socket.id} déconnecté de la salle ${roomID}`);
-                
-                // Supprimer la salle si plus personne
+                io.emit('updatePlayerCount', nbJoueur);
+                console.log(`Nombre de joueurs dans la salle ${roomID}: ${room.players.length}`);
+    
+                // Supprimer la salle si elle est vide et que l'hôte s'est déconnecté
                 if (room.players.length === 0 && room.host === socket.id) {
                     delete rooms[roomID];
                     console.log(`Salle ${roomID} supprimée.`);
                 }
+                break;  // Arrêter la boucle après avoir trouvé le joueur
+            }
+        }*/
+    }
+    });
+    
+
+    /*socket.on('disconnection', () => { 
+        console.log(`Joueur ${socket.id} déconnecté de la salle`);
+        // Parcourir toutes les salles
+        for (const roomID in rooms) {
+            const room = rooms[roomID];
+            // Vérifier si le joueur est dans la salle
+            if (room.players.includes(socket.id)) {
+                // Supprimer le joueur de la liste
+                room.players = room.players.filter(id => id !== socket.id);
+    
+                // Mettre à jour le compteur de joueurs
+                io.to(roomID).emit('updatePlayerCount', room.players.length);
+                console.log(`Nombre de joueurs dans la salle ${roomID}: ${room.players.length}`);
+    
+                // Supprimer la salle si elle est vide et que l'hôte s'est déconnecté
+                if (room.players.length === 0 && room.host === socket.id) {
+                    delete rooms[roomID];
+                    console.log(`Salle ${roomID} supprimée.`);
+                }
+                break;  // Arrêter la boucle après avoir trouvé le joueur
             }
         }
     });*/
-
-    socket.on('disconnect', (reason) => {
-        console.log(`Déconnexion de ${socket.id}, raison : ${reason}`);
-    });
+    
     
     
 });
