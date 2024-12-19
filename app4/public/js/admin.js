@@ -76,6 +76,6 @@ let joueurs = [];  // Tableau pour stocker les noms des joueurs
 
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("retour").addEventListener("click", () => {
-                window.location.href = `/`;
+                window.location.href = `/choix`;
             });
         });

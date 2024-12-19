@@ -186,7 +186,7 @@ io.on('connection', (socket) => {
             io.emit('updatePlayerCount', nbJoueur, name);
             console.log(`Nombre de joueurs dans la salle ${roomID}: ${nbJoueur}`);
 
-            if(nbJoueur == 0){
+            if(nbJoueur < 2){
                 isTimerRunning = false;
                 resetTimer();
                 resetQuestion();
