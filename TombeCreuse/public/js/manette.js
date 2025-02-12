@@ -17,6 +17,11 @@ $(function () {
     }
   });
 
+  function dessinerJoueur(){
+    ctx.fillStyle = color;
+    ctx.fillRect(player.x, 50, 20, 20);
+  }
+
   function checkCollision() {
     if (!(player.x >= Lave[0].x && player.x <= Lave[0].x + LaveEcart - 20) && Lave[0].y <= player.y && player.y <= Lave[0].y + LaveHauteur) {
       slider.disabled = true;
@@ -58,8 +63,7 @@ $(function () {
       LaveEcart = info.LaveEcart;
       //ajouter un carré de couleur différente sur le canva pour chaque joueur
       color = info.color;
-      ctx.fillStyle = color;
-      ctx.fillRect(player.x, 50, 20, 20);
+      dessinerJoueur();
     }
   });
 
@@ -74,8 +78,7 @@ $(function () {
     // clear le canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // dessiner le joueur
-    ctx.fillStyle = color;
-    ctx.fillRect(player.x, 50, 20, 20);
+    dessinerJoueur();
   });
 
   socket.on('endGame', () => {
@@ -85,9 +88,8 @@ $(function () {
   socket.on('slider', (info) => {
     if (info.playerID === socket.id) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = color;
       player.x = info.x;
-      ctx.fillRect(info.x, 50, 20, 20);
+      dessinerJoueur();
     }
   });
 
@@ -95,7 +97,7 @@ $(function () {
 
   document.addEventListener('keydown', function (event) {
     const step = 5; // Adjust the step size as needed
-    if (event.key === 'q' || event.key === 'd') {
+    if ((event.key === 'q' || event.key === 'd') && !player.collision) {
       if (intervalId === null) {
         intervalId = setInterval(() => {
           if (event.key === 'q') {
