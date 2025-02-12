@@ -1,0 +1,10 @@
+canvas {
+    display: block;
+    margin: 0 auto;
+    background: saddlebrown;
+}
+
+#slider {
+    display: block;
+    margin: 20px auto;
+}
