@@ -20,6 +20,7 @@ let timeLeft = 15;
 let isTimerRunning = false;
 let isGameStarted = false;
 const rooms = {};
+let nbJoueur = 0;
 
 fs.readFile('questions.json', 'utf8', (err, data) => {
     if (err) throw err;
@@ -180,7 +181,7 @@ io.on('connection', (socket) => {
 
         if (roomID) {
             const room = rooms[roomID];
-            let nbJoueur = room.players.length;;
+            nbJoueur = room.players.length;;
 
             room.players = room.players.filter(id => id !== name);
             nbJoueur = room.players.length;
