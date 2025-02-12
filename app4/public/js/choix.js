@@ -7,10 +7,12 @@ document.getElementById("retour").addEventListener("click", () => {
 
 
 document.getElementById("createScreenButtonAdmin").addEventListener("click", () => {
-    socket.emit("createRoom");
-    socket.on("idRoom", (room) => {
-        window.location.href = `/BasQiZ/admin?idRoom=${room}`;
-    });
+    if(document.getElementById("mdp").value === "admin"){
+        socket.emit("createRoom");
+        socket.on("idRoom", (room) => {
+            window.location.href = `/BasQiZ/admin?idRoom=${room}`;
+        });
+    }
 });
 
 
