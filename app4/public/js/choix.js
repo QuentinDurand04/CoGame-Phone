@@ -2,31 +2,36 @@
 const socket = io();
 
 document.getElementById("retour").addEventListener("click", () => {
-    window.location.href = `/`;  // Redirection avec l'ID généré
+    window.location.href = `/`;
 });
 
 
-// Création de l'écran principal admin
 document.getElementById("createScreenButtonAdmin").addEventListener("click", () => {
-    socket.emit("createRoom");  // Demande de création de room
+    socket.emit("createRoom");
     socket.on("idRoom", (room) => {
-        window.location.href = `/admin?idRoom=${room}`;  // Redirection avec l'ID généré
+        window.location.href = `/BasQiZ/admin?idRoom=${room}`;
     });
 });
 
-// Création de l'écran principal
+
 document.getElementById("createScreenButton").addEventListener("click", () => {
-    socket.emit("createRoom");  // Demande de création de room
+    socket.emit("createRoom");
     socket.on("idRoom", (room) => {
-        window.location.href = `/ecran?idRoom=${room}`;  // Redirection avec l'ID généré
+        window.location.href = `/BasQiZ/ecran?idRoom=${room}`;
     });
 });
 
-// Connexion de la manette
 document.getElementById("joinRoomButton").addEventListener("click", () => {
     const idRoom = document.getElementById("idRoom").value;
     if (idRoom) {
-        window.location.href = `/nom?idRoom=${idRoom}`;
+        console.log("ID de la salle :", idRoom);
+        socket.emit("existRoom", { idRoom });
+        socket.on("yesRoom", () => {
+            window.location.href = `/BasQiZ/nom?idRoom=${idRoom}`;
+        });
+        socket.on("noRoom", () => {
+            alert("La salle " + idRoom + " n'existe pas.");
+        });
     } else {
         alert("Veuillez remplir le champ.");
     }

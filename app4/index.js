@@ -1,4 +1,3 @@
-// Importation des modules nécessaires
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -8,55 +7,48 @@ const io = require("socket.io")(server, {
         origin: "*",
         methods: ["GET", "POST"]
     },
-    pingTimeout: 60000,  // Temps avant déconnexion
-    pingInterval: 25000, // Intervalle de ping
+    pingTimeout: 60000,
+    pingInterval: 25000,
 });
 const fs = require('fs');
 
-// Variables globales
 let questions = [];
 let currentQuestionIndex = 0;
-let players = new Set();
 let responses = {};
 let timer;
 let timeLeft = 15;
 let isTimerRunning = false;
 let isGameStarted = false;
 const rooms = {};
-let isController = false;
-let nbJoueur = 0;
 
-// Charger les questions
 fs.readFile('questions.json', 'utf8', (err, data) => {
     if (err) throw err;
     questions = JSON.parse(data);
     questions.sort(() => Math.random() - 0.5);
 });
 
-// Servir les fichiers statiques
 app.use(express.static('public'));
 
-// Routes principales
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/html/index.html'));
-app.get('/choix', (req, res) => res.sendFile(__dirname + '/public/html/choix.html'));
-app.get('/manette', (req, res) => {
+app.get('/BasQiZ/choix', (req, res) => res.sendFile(__dirname + '/public/html/choix.html'));
+app.get('/BasQiZ/manette', (req, res) => {
     const { idRoom, name } = req.query;
     if (idRoom && name) {
         res.sendFile(__dirname + '/public/html/manette.html');
     } else {
-        res.redirect('/nom');
+        res.redirect('/BasQiZ/nom');
     }
 });
-app.get('/nom', (req, res) => {
+app.get('/BasQiZ/nom', (req, res) => {
     const { idRoom } = req.query;
     if (idRoom) {
         res.sendFile(__dirname + '/public/html/nom.html');
     } else {
-        res.redirect('/choix');
+        res.redirect('/BasQiZ/choix');
     }
 });
 
-app.get('/admin', (req, res) => {
+app.get('/BasQiZ/admin', (req, res) => {
     const { idRoom } = req.query;
     if (idRoom) {
         res.sendFile(__dirname + '/public/html/admin.html');
@@ -73,7 +65,6 @@ app.get('/BasQiZ/ecran', (req, res) => {
     }
 });
 
-// Gestion du timer
 function startTimer() {
     if (isTimerRunning) return;
     isTimerRunning = true;
@@ -118,31 +109,36 @@ function revealAnswer() {
     io.emit('revealAnswer', correctIndex);
 }
 
-// Gestion des événements Socket.IO
 io.on('connection', (socket) => {
-    // Lors de la création de la room
+
     socket.on('createRoom', () => {
         const roomID = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-        rooms[roomID] = { players: [], host: socket.id };
+        if (!rooms[roomID]) {
+            rooms[roomID] = { players: [] };
+            console.log(`Salle ${roomID} créée.`);
+        }
         socket.join(roomID);
         
-        // Envoyer l'ID à choix.html
         socket.emit('idRoom', roomID);  
+    });
 
-        console.log(`Salle créée avec l'ID ${roomID}`);
+    socket.on('existRoom', ({ idRoom }) => {
+    
+        if (rooms[idRoom]) {
+            socket.emit('yesRoom');
+        } else {
+            socket.emit('noRoom');
+        }
     });
 
 
-    // Lorsqu'un joueur rejoint une room
     socket.on('joinRoom', ({ name, idRoom }) => {
-        // Vérifie si la salle existe
         if (rooms[idRoom]) {
-            nbJoueur++;
             socket.join(idRoom);
-            // Mettez à jour le nombre de joueurs
+            rooms[idRoom].players.push(name);
+            nbJoueur = rooms[idRoom].players.length;
             io.emit('updatePlayerCount', nbJoueur, name);
-            console.log(`Joueur ${socket.id} rejoint la salle ${idRoom}`);
-            console.log(`Nombre de joueurs : ${nbJoueur}`);
+            console.log(`Joueur ${name} rejoint la salle ${idRoom}`);
         } else {
             console.log(`Salle ${idRoom} non trouvée ou ${name} non défini`);
         }
@@ -164,6 +160,7 @@ io.on('connection', (socket) => {
 
     socket.on('startGame', () => {
         if (!isGameStarted && nbJoueur > 0) {
+            io.emit('waitingForHost', '');
             isGameStarted = true;
             nextQuestion();
         }
@@ -178,47 +175,39 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnection', (name) => {
-        console.log(`Déconnexion de ${name}`);
-        nbJoueur--;
-        for (const roomID in rooms) {
+
+        const roomID = Object.keys(rooms).find(roomID => rooms[roomID].players.includes(name));
+
+        if (roomID) {
             const room = rooms[roomID];
-            
+            let nbJoueur = room.players.length;;
+
+            room.players = room.players.filter(id => id !== name);
+            nbJoueur = room.players.length;
             io.emit('updatePlayerCount', nbJoueur, name);
-            console.log(`Nombre de joueurs dans la salle ${roomID}: ${nbJoueur}`);
+            console.log(`Joueur ${name} a quitté la salle ${roomID}`);
 
             if(nbJoueur < 2){
+                io.emit('waitingForHost', 'Pas assez de joueurs pour continuer la partie');
                 isTimerRunning = false;
                 resetTimer();
                 resetQuestion();
                 isGameStarted = false;
             }
-    /*
-        // Parcourir toutes les salles
-        for (const roomID in rooms) {
-            const room = rooms[roomID];
-    
-            // Vérifier si le joueur est dans la salle
-            if (room.players.includes(socket.id)) {
-                // Supprimer le joueur de la liste
-                room.players = room.players.filter(id => id !== socket.id);
-    
-                // Mettre à jour le compteur de joueurs
-                io.emit('updatePlayerCount', nbJoueur);
-                console.log(`Nombre de joueurs dans la salle ${roomID}: ${room.players.length}`);
-    
-                // Supprimer la salle si elle est vide et que l'hôte s'est déconnecté
-                if (room.players.length === 0 && room.host === socket.id) {
-                    delete rooms[roomID];
-                    console.log(`Salle ${roomID} supprimée.`);
-                }
-                break;  // Arrêter la boucle après avoir trouvé le joueur
+
+            if (nbJoueur === 0) {
+                delete rooms[roomID];
+                console.log(`Salle ${roomID} supprimée.`);
+                io.emit('delete');
             }
-        }*/
-    }
+        } else {
+            console.log(`Aucune donnée trouvée pour le socket ${name}`);
+        }
     });
+                
     
 
-    /*socket.on('disconnection', () => { 
+    /*socket.on('disconnect', () => { 
         console.log(`Joueur ${socket.id} déconnecté de la salle`);
         // Parcourir toutes les salles
         for (const roomID in rooms) {
@@ -246,7 +235,6 @@ io.on('connection', (socket) => {
     
 });
 
-// Démarrage du serveur
 server.listen(8001, () => {
     console.log("Server is running on http://localhost:8001");
 });

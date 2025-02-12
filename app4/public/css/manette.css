@@ -1,0 +1,97 @@
+.A{
+    width: 50%;
+    height: 10em;
+}
+.grid {
+    display: grid;
+
+
+}
+.grid > div {
+    border: 1px solid #000;
+    padding: 20px;
+    text-align: center;
+
+}
+
+.grid-item {
+    border: 1px solid #000;
+    padding: 20px;
+    text-align: center;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    background: linear-gradient(13deg, rgba(255,0,181,1) 0%, rgba(255,109,0,1) 50%, rgba(211,47,47,1) 100%);
+    background-size: cover;
+
+}
+#answers {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+}
+#answers div {
+    border: 1px solid #000;
+    padding: 20px;
+    text-align: center;
+    margin: 10px 0;
+
+}
+
+#buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+}
+#buttons button {
+
+    padding: 20px;
+    text-align: center;
+    margin: 10px 0;
+}
+button {
+    border: 1px solid #000;
+    background-color: transparent;
+}
+button:disabled {
+    background: rgba(211,47,47, 0.3);
+    color: black;
+    border: 1px solid grey;
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#players{
+
+    font-size: 200%;
+    font-weight: bolder;
+    padding: 2%;
+}
+
+.container>h1{
+    border: black 1px solid;
+    border-radius: 10px;
+    padding: 2%;
+}
+
+#score{
+    margin-top: 1%;
+    margin-bottom: 2%;
+}
+
+button:hover{
+    cursor: pointer;
+    background-color: orangered;
+}
+
+

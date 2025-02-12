@@ -64,4 +64,27 @@ button:disabled {
     border: 1px solid grey;
 }
 
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.container>h1{
+    border: black 1px solid;
+    border-radius: 10px;
+    padding: 2%;
+}
+
+
+button:hover{
+    cursor: pointer;
+    background-color: orangered;
+}
+
+#retour{
+    margin: 2%;
+}
 

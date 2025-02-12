@@ -3,14 +3,17 @@
 <head>
   <title>Manette</title>
   <script src="/socket.io/socket.io.js"></script>
-  <link rel="stylesheet" type="text/css" href="./css/style.css">
+  <link rel="stylesheet" type="text/css" href="../css/manette.css">
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="../js/manette.js" defer></script>
 </head>
 <body>
-<h1>Manette</h1>
-<div id="buttons">En attente du démarrage de la partie...</div>
-<button id="disconnect">Déconnexion</button>
-<div id="score">0 point</div>
+  <div class="container">
+    <h1>Manette</h1>
+    <div id="buttons"></div>
+    <div id="players">En attente du démarrage de la partie...</div>
+    <div id="score">0 point</div>
+    <button id="disconnect">Déconnexion</button>
+  </div>
 </body>
 </html>

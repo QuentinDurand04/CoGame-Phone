@@ -2,21 +2,26 @@
 <html>
 <head>
     <title>Rôles</title>
+    <link rel="stylesheet" type="text/css" href="../css/choix.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="../js/choix.js" defer></script>
 </head>
 <body>
+<div class="container">
 <h1>Vous pouvez sélectionner votre rôle :</h1>
 <p>Un écran principal permet de créer une partie. Vous pouvez l'administer pour jouer en local où simplement la créer pour jouer en ligne. Un id est généré et vous pouvez y connecter avec une manette</p>
 
+<div class="buttons">
 <button id="createScreenButtonAdmin">Écran principal mode admin</button>
-<br><br>
 <button id="createScreenButton">Écran principal en ligne</button>
+</div>
 
 <p>Une manette permet de jouer au jeu affiché sur l'écran, vous pouvez vous y connecter avec l'id affiché sur l'écran</p>
+<div class="buttons">
 <input type="text" id="idRoom" name="idRoom" placeholder="ID de la room">
 <button id="joinRoomButton">Manette</button>
-<br><br>
+</div>
 <button id="retour">Retour</button>
+</div>
 </body>
 </html>

@@ -2,25 +2,35 @@
 <html>
 <head>
     <title>Écran Principal</title>
-    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/ecran.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="../js/ecran.js" defer></script>
 </head>
 <body onload="room()">
-<h1>Écran Principal</h1>
-<div id="room">id de la room :</div>
-<div id="playerCount">Nombres de joueurs dans la partie : 0</div>
-<div id="joueurs">Nom des joueurs dans la partie : </div>
-<div id="responseCount">Réponses reçues : 0</div>
-<div>
-    <h2>Temps restant : <span id="timer">15</span> secondes</h2>
-</div>
-<progress id="file" max="15" value=15></progress>
-<button id="retour">Retour</button>
-<div class="grid">
-<div id="questiongrid"><h2 id="question">En attente de joueurs...</h2></div>
-<ul id="answers"></ul>
-</div>
-</body>
+    <div class="container">
+    <h1>Écran Principal</h1>
+    <div id="room">id de la room :</div>
+    </div>
+    <div class="containerPlayers">
+    <div class="players">
+    <div id="playerCount">Nombres de joueurs dans la partie : 0</div>
+    <div id="responseCount">Réponses reçues : 0</div>
+    </div>
+    <div id="joueurs">Nom des joueurs dans la partie : </div>
+    </div>
+    <div class="container">
+    <div>
+        <h2>Temps restant : <span id="timer">15</span> secondes</h2>
+    </div>
+    <progress id="file" max="15" value=15></progress>
+    <div class="buttons">
+    <button id="retour">Retour</button>
+    </div>
+    </div>
+    <div class="grid">
+    <div id="questiongrid"><h2 id="question">En attente de joueurs...</h2></div>
+    <ul id="answers"></ul>
+    </div>
+    </body>
 </html>

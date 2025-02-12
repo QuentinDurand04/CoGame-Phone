@@ -1,7 +1,7 @@
 const socket = io();
 
         document.getElementById("retour").addEventListener("click", () => {
-            window.location.href = `/choix`;
+            window.location.href = `/BasQiZ/choix`;
         });
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -12,13 +12,9 @@ const socket = io();
                     const urlParams = new URLSearchParams(window.location.search);
                     const idRoom = urlParams.get('idRoom');
 
-                    console.log("ID de la salle :", idRoom);
-                    console.log("Nom du joueur :", name);
-                    console.log("Tentative de rejoindre la salle...");
-
                     if (idRoom && name) {
                         socket.emit("joinRoom", { idRoom, name });
-                        window.location.href = `/manette?idRoom=${idRoom}&name=${encodeURIComponent(name)}`;
+                        window.location.href = `/BasQiZ/manette?idRoom=${idRoom}&name=${encodeURIComponent(name)}`;
                     } else {
                         alert("Veuillez remplir le champ.");
                     }
