@@ -11,6 +11,19 @@ $(function () {
         $('#room').text('id de la room : ' + room);
     });
 
+    function dessinerJoueurs() {
+        players.forEach((p) => {
+            if (!p.collision) {
+                dessinerJoueur(p);
+            }
+        });
+    }
+
+    function dessinerJoueur(player) {
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, 20, 20);
+    }
+
     socket.on('collision', (playerCollison) => {
         let player = players.find(player => player.id === playerCollison.id);
         player.collision = true;
@@ -27,12 +40,7 @@ $(function () {
             // Clear le canvas
             ctx.clearRect(player.x, player.y, 20, 20);
             // Dessiner les joueurs
-            players.forEach((p) => {
-                if (!p.collision) {
-                    ctx.fillStyle = p.color;
-                    ctx.fillRect(p.x, p.y, 20, 20);
-                }
-            });
+            dessinerJoueurs();
         }
     });
 
@@ -54,10 +62,7 @@ $(function () {
         // clear le canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // dessiner les joueurs
-        players.forEach((p) => {
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, 20, 20);
-        });
+        dessinerJoueurs();
     });
 
     //dessiner les laves
@@ -79,9 +84,8 @@ $(function () {
         //ajouter un carré de couleur différente sur le canva pour chaque joueur
         let player = {id: info.id, color: info.color, x: 150, y: 50, collision: true};
         if (!isGameStarted) {
-            ctx.fillStyle = info.color;
-            ctx.fillRect(150, 50, 20, 20);
             player = {id: info.id, color: info.color, x: 150, y: 50, collision: false};
+            dessinerJoueur(player);
         }
         players.push(player);
     });
@@ -96,12 +100,7 @@ $(function () {
             ctx.clearRect(player.x, player.y, canvas.width, canvas.height);
         }
         // Dessiner les joueurs
-        players.forEach((p) => {
-            if (!p.collision) {
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, 20, 20);
-            }
-        });
+        dessinerJoueurs();
     });
 
     socket.on('slider', (info) => {
@@ -111,12 +110,7 @@ $(function () {
             // Clear le canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // Dessiner les joueurs
-            players.forEach((p) => {
-                if (!p.collision) {
-                    ctx.fillStyle = p.color;
-                    ctx.fillRect(p.x, p.y, 20, 20);
-                }
-            });
+            dessinerJoueurs();
         }
     });
 
