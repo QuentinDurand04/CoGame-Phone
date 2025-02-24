@@ -4,6 +4,7 @@ const http = require('http');
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 
+// fonction pour simuler requestAnimationFrame
 global.requestAnimationFrame = function(callback) {
     return setTimeout(callback, 1000 / 120); // 120 FPS
 };
@@ -20,38 +21,53 @@ app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
 
 room = Math.floor(Math.random() * 1000);
+
+// quand un client se connecte
 io.on('connection', (socket) => {
     let isController = false;
-    //liste des laves
+    // liste des laves
     let Lave = [];
     const LaveHauteur = 20;
     const LaveEcart = 100;
     let frameCount = 0;
     let speed = 2;
                 
+    // fonction pour dessiner la lave
     function drawLave() {
+        // ajouter une lave toutes les 90 frames, une valeur petite pour plus de difficulté
         if (frameCount % 90 === 0) {
+            // taille aléatoire de la lave
             const pipeWidth = Math.floor(Math.random() * (320 - LaveEcart));
             Lave.push({ y: 480, x: pipeWidth });
         }
+        // envoyer la lave à tous les clients
         for (let i = Lave.length - 1; i >= 0; i--) {
+            // envoi
             io.emit('drawLave', {x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave});
+            // déplacement de la lave
             Lave[i].y -= speed;
+            // supprimer la lave si elle est hors de l'écran
             if (Lave[i].y + LaveHauteur < 0) {
                 Lave.splice(i, 1);
             }
         }
     }
 
+    // fonction pour dessiner la lave en boucle
     function draw() {
+        // dessiner la lave si le jeu est en cours
         if (isGameStarted && nbPlayersAlive > 0) {
             drawLave();
             frameCount++;
+            // augmenter la vitesse toutes les 100 frames
             if (frameCount % 100 === 0) {
-                speed += 0.3; // More gradual speed increase
+                speed += 0.3;
             }
+            // boucle pour dessiner la lave
             requestAnimationFrame(draw);
+            // si tous les joueurs sont éliminés, finir le jeu
         } else if (nbPlayersAlive === 0) {
+            // envoyer un message de fin de partie à tous les clients et réinitialiser les variables
             io.emit('endGame');
             isGameStarted = false;
             speed = 2;
@@ -60,26 +76,34 @@ io.on('connection', (socket) => {
         }
     }
 
+    // quand le joueur clique sur le bouton "Commencer"
     socket.on('startGameServ', () => {
+        // si au moins un joueur est connecté
         if (players.length >= 1) {
+            // réinitialiser les variables
             nbPlayersAlive = players.length;
             players.forEach(player => player.collision = false);
+            // envoyer un message de début de partie à tous les clients
             io.emit('startGame');
             isGameStarted = true;
+            // dessiner la lave
             draw();
         }
     });
 
+    // quand un joueur est en collision
     socket.on('collisionServ', (info) => {
+        // mettre à jour la collision du joueur et le nombre de joueurs en vie
         let player = players.find(player => player.id === info.id);
-        console.log(info);
-        console.log(player);
         player.collision = info.collision;
         nbPlayersAlive--;
+        // envoyer un message de collision à tous les clients
         io.emit('collision', {id: info.id, collision: info.collision});
     });
 
+    // quand le joueur clique sur le bouton "Fin"
     socket.on('endGameServ', () => {
+        // envoyer un message de fin de partie à tous les clients et réinitialiser les variables
         io.emit('endGame');
         isGameStarted = false;
         speed = 2;
@@ -87,48 +111,52 @@ io.on('connection', (socket) => {
         Lave.length = 0;
     });
 
+    // quand un joueur se connecte
     socket.on('identify', (type) => {
+        // si le joueur est une manette
         if (type === 'manette') {
-            console.log(socket.id);
-            socket.join(room);
+            // ajouter le joueur à la liste des joueurs et définir la couleur
             isController = true;
             let color = '#' + Math.floor(Math.random()*16777215).toString(16);
             players.push({id: socket.id, x: 150, y: 50, color: color, collision: false});
             nbPlayersAlive++;
+            // envoyer un message de nouveux joueur
             io.emit('idRoom', room);
             io.emit('newPlayerEcran', {count: players.length, id: socket.id, color: color, collision: false});
             io.emit('newPlayerManette', {playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart});
+            // si le jeu n'est pas commencé, envoyer un message "En attente de l'hôte"
             if (!isGameStarted || !isGameStarted && players.length < 1) {
-                io.emit('waitingForHost'); // Envoie "En attente de l'hôte" à la manette
+                io.emit('waitingForHost');
             }
         }
     });
 
     //quand le joueur bouge le slider
     socket.on('sliderServ', (info) => {
-        console.log(info);
-        //update player position
+        // mettre à jour la position du joueur
         let x = info.value;
         players.forEach(player => {
             if (player.id === info.id) {
                 player.x = info.value;
             }
         });
+        // envoyer la nouvelle position à tous
         io.emit('slider', {players : players, playerID : info.id, x : x});
     });
 
+    // quand un joueur se déconnecte
     socket.on('disconnect', () => {
         if (isController) {
             console.log('Socket disconnected : ' + socket.id);
-            //remove player from array
+            // supprimer le joueur de la liste
             players = players.filter(player => player.id !== socket.id);
-            //send to all players the updated player list
+            // envoyer un message de déconnexion à tous les clients
             io.emit('disconnectPlayer', {players : players, playerID : socket.id});
         }
     });
 });
 
-
+// démarrer le serveur
 server.listen(8003, () => {
     console.log("Server is running on http://localhost:8003");
 });
