@@ -236,6 +236,6 @@ io.on('connection', (socket) => {
     
 });
 
-server.listen(8001, () => {
-    console.log("Server is running on http://localhost:8001");
+server.listen(3000, () => {
+    console.log("Server is running");
 });

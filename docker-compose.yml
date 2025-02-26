@@ -1,0 +1,28 @@
+version: '3.8'
+
+networks:
+  CoGame_Phone:
+    driver: bridge
+
+services:
+  BasQiz:
+    image: node:14
+    networks:
+      - CoGame_Phone
+    working_dir: /usr/src/app
+    volumes:
+      - ./app4:/usr/src/app
+    ports:
+      - "3001:3000"
+    command: node server.js
+
+  TombeCreuse:
+    image: node:14
+    networks:
+      - CoGame_Phone
+    working_dir: /usr/src/app
+    volumes:
+      - ./TombeCreuse:/usr/src/app
+    ports:
+      - "3002:3000"
+    command: node server.js

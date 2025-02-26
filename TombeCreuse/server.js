@@ -11,16 +11,15 @@ global.requestAnimationFrame = function(callback) {
 
 let players = [];
 let isGameStarted = false;
-let room;
 let nbPlayersAlive = 0;
 
 // Route pour servir les fichiers statiques
 app.use(express.static('public'));
 
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 app.get('/manette', (req, res) => res.sendFile(__dirname + '/public/manette.html'));
 app.get('/ecran', (req, res) => res.sendFile(__dirname + '/public/ecran.html'));
-
-room = Math.floor(Math.random() * 1000);
+app.get('/admin', (req, res) => res.sendFile(__dirname + '/public/admin.html'));
 
 // quand un client se connecte
 io.on('connection', (socket) => {
@@ -121,7 +120,6 @@ io.on('connection', (socket) => {
             players.push({id: socket.id, x: 150, y: 50, color: color, collision: false});
             nbPlayersAlive++;
             // envoyer un message de nouveux joueur
-            io.emit('idRoom', room);
             io.emit('newPlayerEcran', {count: players.length, id: socket.id, color: color, collision: false});
             io.emit('newPlayerManette', {playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart});
             // si le jeu n'est pas commencé, envoyer un message "En attente de l'hôte"
@@ -157,6 +155,6 @@ io.on('connection', (socket) => {
 });
 
 // démarrer le serveur
-server.listen(8003, () => {
-    console.log("Server is running on http://localhost:8003");
+server.listen(3000, () => {
+    console.log("Server is running");
 });

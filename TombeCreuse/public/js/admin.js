@@ -2,7 +2,7 @@ $(function () {
     // création d'une connexion websocket
     const socket = io();
     // envoyer un message pour s'identifier
-    socket.emit('identify', 'ecran');
+    socket.emit('identify', 'admin');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     //liste des joueurs
@@ -32,6 +32,7 @@ $(function () {
         // si tous les joueurs sont en collision, finir le jeu
         if (players.every(player => player.collision)) {
             isGameStarted = false;
+            document.getElementById('startGame').disabled = false;
             // afficher un message de fin de partie
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.font = '48px serif';
@@ -46,14 +47,24 @@ $(function () {
         }
     });
 
+    // envoyer un message au serveur pour les clique sur le bouton "Commencer" et "Fin"
+    document.getElementById('startGame').addEventListener('click', function() {
+        socket.emit('startGameServ');
+    });
+    document.getElementById('endGame').addEventListener('click', function() {
+        socket.emit('endGameServ');
+    });
+
     // quand le serveur envoie un message pour finir le jeu
     socket.on('endGame', () => {
         isGameStarted = false;
+        document.getElementById('startGame').disabled = false;
     });
 
     // quand le serveur envoie un message pour commencer le jeu
     socket.on('startGame', () => {
         isGameStarted = true;
+        document.getElementById('startGame').disabled = true;
         // clear le canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // dessiner les joueurs
