@@ -43,6 +43,7 @@ io.on('connection', (socket) => {
         for (let i = Lave.length - 1; i >= 0; i--) {
             // envoi
             io.emit('drawLave', {x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave});
+            console.log(drawLave);
             // déplacement de la lave
             Lave[i].y -= speed;
             // supprimer la lave si elle est hors de l'écran
