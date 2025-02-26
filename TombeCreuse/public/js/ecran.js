@@ -8,6 +8,8 @@ $(function () {
     //liste des joueurs
     let players = [];
     let isGameStarted = false;
+    let progressBar = document.getElementById('progressBar');
+    progressBar.style.display = 'none';
 
     // fonction pour dessiner les joueurs
     function dessinerJoueurs() {
@@ -53,6 +55,30 @@ $(function () {
 
     // quand le serveur envoie un message pour commencer le jeu
     socket.on('startGame', () => {
+        isGameStarted = true;
+        // clear le canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // dessiner les joueurs
+        dessinerJoueurs();
+    });
+
+    socket.on('waitingForRestart', () => {
+        progressBar.style.display = 'block';
+        // add 1 to the progress bar every second until it reaches 10
+        let progress = 0;
+        let id = setInterval(frame, 1000);
+        function frame() {
+            if (progress === 9) {
+                clearInterval(id);
+                progressBar.style.display = 'none';
+            } else {
+                progress++;
+                progressBar.value = progress;
+            }
+        }
+    });
+
+    socket.on('restartGame', () => {
         isGameStarted = true;
         // clear le canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);

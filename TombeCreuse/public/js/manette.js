@@ -13,6 +13,8 @@ $(function () {
   let Lave = [];
   let LaveHauteur;
   let LaveEcart;
+  let progressBar = document.getElementById('progressBar');
+  progressBar.style.display = 'none';
 
   // envoyer une requête au serveur pour changer la position du joueur si le joueur n'est pas éliminé
   document.getElementById('slider').addEventListener('input', function () {
@@ -85,8 +87,7 @@ $(function () {
     $('h1').text('En attente de l\'hôte');
   });
 
-  // quand le serveur envoie un message de début de partie
-  socket.on('startGame', () => {
+  function startGame() {
     slider.disabled = false;
     player.collision = false;
     $('h1').text('Partie en cours');
@@ -94,7 +95,32 @@ $(function () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // dessiner le joueur
     dessinerJoueur();
+  }
+
+  // quand le serveur envoie un message de début de partie
+  socket.on('startGame', () => {
+    startGame();
   });
+
+  socket.on('restartGame', () => {
+    startGame();
+  });
+
+  socket.on('waitingForRestart', () => {
+    progressBar.style.display = 'block';
+    // add 1 to the progress bar every second until it reaches 10
+    let progress = 0;
+    let id = setInterval(frame, 1000);
+    function frame() {
+        if (progress === 9) {
+            clearInterval(id);
+            progressBar.style.display = 'none';
+        } else {
+            progress++;
+            progressBar.value = progress;
+        }
+    }
+});
 
   // quand le serveur envoie un message de fin de partie
   socket.on('endGame', () => {

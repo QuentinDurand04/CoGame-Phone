@@ -5,13 +5,14 @@ const server = http.createServer(app);
 const io = require('socket.io')(server);
 
 // fonction pour simuler requestAnimationFrame
-global.requestAnimationFrame = function(callback) {
+global.requestAnimationFrame = function (callback) {
     return setTimeout(callback, 1000 / 120); // 120 FPS
 };
 
 let players = [];
 let isGameStarted = false;
 let nbPlayersAlive = 0;
+let timeout;
 
 // Route pour servir les fichiers statiques
 app.use(express.static('public'));
@@ -30,7 +31,7 @@ io.on('connection', (socket) => {
     const LaveEcart = 100;
     let frameCount = 0;
     let speed = 2;
-                
+
     // fonction pour dessiner la lave
     function drawLave() {
         // ajouter une lave toutes les 90 frames, une valeur petite pour plus de difficulté
@@ -42,8 +43,7 @@ io.on('connection', (socket) => {
         // envoyer la lave à tous les clients
         for (let i = Lave.length - 1; i >= 0; i--) {
             // envoi
-            io.emit('drawLave', {x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave});
-            console.log(drawLave);
+            io.emit('drawLave', { x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave });
             // déplacement de la lave
             Lave[i].y -= speed;
             // supprimer la lave si elle est hors de l'écran
@@ -73,6 +73,22 @@ io.on('connection', (socket) => {
             speed = 2;
             frameCount = 0;
             Lave.length = 0;
+            io.emit('waitingForRestart');
+            //wait 10 seconds before reseting the game
+            timeout = setTimeout(() => {
+                console.log('Restarting game');
+                // si au moins un joueur est connecté
+                if (players.length >= 1) {
+                    // réinitialiser les variables
+                    nbPlayersAlive = players.length;
+                    players.forEach(player => player.collision = false);
+                    // envoyer un message de début de partie à tous les clients
+                    io.emit('restartGame');
+                    isGameStarted = true;
+                    // dessiner la lave
+                    draw();
+                }
+            }, 10000);
         }
     }
 
@@ -98,11 +114,14 @@ io.on('connection', (socket) => {
         player.collision = info.collision;
         nbPlayersAlive--;
         // envoyer un message de collision à tous les clients
-        io.emit('collision', {id: info.id, collision: info.collision});
+        io.emit('collision', { id: info.id, collision: info.collision });
     });
 
     // quand le joueur clique sur le bouton "Fin"
     socket.on('endGameServ', () => {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
         // envoyer un message de fin de partie à tous les clients et réinitialiser les variables
         io.emit('endGame');
         isGameStarted = false;
@@ -117,12 +136,12 @@ io.on('connection', (socket) => {
         if (type === 'manette') {
             // ajouter le joueur à la liste des joueurs et définir la couleur
             isController = true;
-            let color = '#' + Math.floor(Math.random()*16777215).toString(16);
-            players.push({id: socket.id, x: 150, y: 50, color: color, collision: false});
+            let color = '#' + Math.floor(Math.random() * 16777215).toString(16);
+            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false });
             nbPlayersAlive++;
             // envoyer un message de nouveux joueur
-            io.emit('newPlayerEcran', {count: players.length, id: socket.id, color: color, collision: false});
-            io.emit('newPlayerManette', {playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart});
+            io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false });
+            io.emit('newPlayerManette', { playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart });
             // si le jeu n'est pas commencé, envoyer un message "En attente de l'hôte"
             if (!isGameStarted || !isGameStarted && players.length < 1) {
                 io.emit('waitingForHost');
@@ -140,7 +159,7 @@ io.on('connection', (socket) => {
             }
         });
         // envoyer la nouvelle position à tous
-        io.emit('slider', {players : players, playerID : info.id, x : x});
+        io.emit('slider', { players: players, playerID: info.id, x: x });
     });
 
     // quand un joueur se déconnecte
@@ -150,7 +169,7 @@ io.on('connection', (socket) => {
             // supprimer le joueur de la liste
             players = players.filter(player => player.id !== socket.id);
             // envoyer un message de déconnexion à tous les clients
-            io.emit('disconnectPlayer', {players : players, playerID : socket.id});
+            io.emit('disconnectPlayer', { players: players, playerID: socket.id });
         }
     });
 });
