@@ -1,5 +1,5 @@
 document.getElementById("admin").addEventListener("click", () => {
-    if(document.getElementById("mdp").value === "admin"){
+    if (document.getElementById("mdp").value === "admin") {
         window.location.href = `/admin`;
     }
 });

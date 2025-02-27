@@ -10,6 +10,14 @@ $(function () {
     let isGameStarted = false;
     let progressBar = document.getElementById('progressBar');
     progressBar.style.display = 'none';
+    // qr code
+    const qrcode = new QRCode(document.getElementById('qrcode'), {
+        text: 'docketu.iutnc.univ-lorraine.fr:28332/manette',
+        width: 128,
+        height: 128,
+        colorDark: '#000',
+        colorLight: '#fff',
+    });
 
     // fonction pour dessiner les joueurs
     function dessinerJoueurs() {
@@ -103,10 +111,10 @@ $(function () {
     socket.on('newPlayerEcran', (info) => {
         $('#playerCount').text('Joueurs dans la partie : ' + info.count);
         // ajouter un carré de couleur différente sur le canva pour chaque joueur
-        let player = {id: info.id, color: info.color, x: 150, y: 50, collision: true};
+        let player = { id: info.id, color: info.color, x: 150, y: 50, collision: true };
         // si le jeu n'est pas commencé, dessiner le joueur
         if (!isGameStarted) {
-            player = {id: info.id, color: info.color, x: 150, y: 50, collision: false};
+            player = { id: info.id, color: info.color, x: 150, y: 50, collision: false };
             dessinerJoueur(player);
         }
         // ajouter le joueur à la liste des joueurs
@@ -120,7 +128,7 @@ $(function () {
         players = info.players
         $('#playerCount').text('Joueurs dans la partie : ' + players.length);
         // clear le canvas
-        if(player){
+        if (player) {
             ctx.clearRect(player.x, player.y, canvas.width, canvas.height);
         }
         // dessiner les joueurs

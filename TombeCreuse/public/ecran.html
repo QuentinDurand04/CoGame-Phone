@@ -4,6 +4,7 @@
     <title>Écran Principal</title>
     <script src="/socket.io/socket.io.js"></script>
     <link href="style.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="./js/ecran.js"></script>
 </head>
@@ -11,6 +12,7 @@
 <h1>Écran Principal</h1>
 <div id="playerCount">Joueurs dans la partie : 0</div>
 <progress id="progressBar" value="0" max="10"></progress>
+<div id="qrcode"></div>
 <canvas id="gameCanvas" width="320" height="480"></canvas>
 </body>
 </html>
