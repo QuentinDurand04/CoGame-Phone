@@ -7,6 +7,7 @@ canvas {
 #slider {
     display: block;
     margin: 20px auto;
+    transform: scaleY(1.5);
     height: 50px; /* Increase the height of the slider */
 }
 body{
