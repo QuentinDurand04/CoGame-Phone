@@ -7,6 +7,8 @@ canvas {
 #slider {
     display: block;
     margin: 20px auto;
+    transform: scale(1.5); /* Increase the size of the slider */
+    height: 50px; /* Increase the height of the slider */
 }
 body{
     background-image: url('images/img_2.png');
@@ -38,6 +40,7 @@ body{
     #slider {
         width: 90%;
         margin: 10px auto;
+        height: 40px; /* Adjust height for smaller screens */
     }
 
     body {
