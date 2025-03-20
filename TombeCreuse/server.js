@@ -13,6 +13,7 @@ let players = [];
 let isGameStarted = false;
 let nbPlayersAlive = 0;
 let timeout;
+let score = 0;
 
 // Route pour servir les fichiers statiques
 app.use(express.static('public'));
@@ -43,7 +44,7 @@ io.on('connection', (socket) => {
         // envoyer la lave à tous les clients
         for (let i = Lave.length - 1; i >= 0; i--) {
             // envoi
-            io.emit('drawLave', { x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave });
+            io.emit('drawLave', { x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave, score: score });
             // déplacement de la lave
             Lave[i].y -= speed;
             // supprimer la lave si elle est hors de l'écran
@@ -57,12 +58,15 @@ io.on('connection', (socket) => {
     function draw() {
         // dessiner la lave si le jeu est en cours
         if (isGameStarted && nbPlayersAlive > 0) {
-            drawLave();
+            score += 0.1;
+            // arrondir le score à 2 décimales
+            score = Math.round(score * 100) / 100;
             frameCount++;
             // augmenter la vitesse toutes les 100 frames
             if (frameCount % 100 === 0) {
                 speed += 0.3;
             }
+            drawLave();
             // boucle pour dessiner la lave
             requestAnimationFrame(draw);
             // si tous les joueurs sont éliminés, finir le jeu
@@ -73,6 +77,7 @@ io.on('connection', (socket) => {
             speed = 2;
             frameCount = 0;
             Lave.length = 0;
+            score = 0;
             io.emit('waitingForRestart');
             //wait 10 seconds before reseting the game
             timeout = setTimeout(() => {
@@ -112,9 +117,10 @@ io.on('connection', (socket) => {
         // mettre à jour la collision du joueur et le nombre de joueurs en vie
         let player = players.find(player => player.id === info.id);
         player.collision = info.collision;
+        player.score = score;
         nbPlayersAlive--;
         // envoyer un message de collision à tous les clients
-        io.emit('collision', { id: info.id, collision: info.collision });
+        io.emit('collision', { id: info.id, collision: info.collision, score: score });
     });
 
     // quand le joueur clique sur le bouton "Fin"
@@ -125,6 +131,7 @@ io.on('connection', (socket) => {
         // envoyer un message de fin de partie à tous les clients et réinitialiser les variables
         io.emit('endGame');
         isGameStarted = false;
+        score = 0;
         speed = 2;
         frameCount = 0;
         Lave.length = 0;

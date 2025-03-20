@@ -9,7 +9,7 @@ $(function () {
   let slider = document.getElementById('slider');
   let rand = Math.floor(Math.random() * 256);
   let color = 'rgb(' + rand + ',' + rand + ',' + rand + ')';
-  let player = { x: 150, y: 50, width: 20, height: 20, collision: false };
+  let player = { x: 150, y: 50, width: 20, height: 20, collision: false, score: 0 };
   let Lave = [];
   let LaveHauteur;
   let LaveEcart;
@@ -61,11 +61,19 @@ $(function () {
       checkCollision();
       // si le joueur est en collision afficher un message de fin de partie
       if (player.collision) {
+        //si le joueur n'a pas de score, lui donner le score
+        console.log(player.score);
+        console.log(lave.score);
+        if (player.score == 0) player.score = lave.score;
+        console.log(player.score);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = '48px serif';
         ctx.fillStyle = 'red';
         ctx.textAlign = 'center';
         ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+        ctx.font = '24px serif';
+        ctx.fillStyle = 'black';
+        ctx.fillText('Score : ' + player.score, canvas.width / 2, canvas.height / 2 + 50);
       }
     }
   });
@@ -90,6 +98,7 @@ $(function () {
   function startGame() {
     slider.disabled = false;
     player.collision = false;
+    player.score = 0;
     $('h1').text('Partie en cours');
     // clear le canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);

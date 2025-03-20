@@ -39,16 +39,26 @@ $(function () {
         // mettre à jour la collision du joueur
         let player = players.find(player => player.id === playerCollison.id);
         player.collision = true;
+        player.score = playerCollison.score;
         // si tous les joueurs sont en collision, finir le jeu
         if (players.every(player => player.collision)) {
             isGameStarted = false;
             document.getElementById('startGame').disabled = false;
             // afficher un message de fin de partie
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '48px serif';
+            ctx.font = '24px serif';
             ctx.fillStyle = 'red';
             ctx.textAlign = 'center';
-            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+            // afficher le score des 10 meilleurs joueurs
+            // afficher plus haut
+            ctx.fillText('Score des 10 meilleurs joueurs', canvas.width / 2, canvas.height / 3 - 50);
+            ctx.font = '12px serif';
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            players.sort((a, b) => b.score - a.score);
+            players.slice(0, 10).forEach((player, index) => {
+                ctx.fillText(player.id + ' : ' + player.score, canvas.width / 2, canvas.height / 3 + index * 30);
+            });
         } else {
             // sinon, effacer le joueur en collision
             ctx.clearRect(player.x, player.y, 20, 20);
