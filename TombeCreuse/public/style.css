@@ -15,6 +15,16 @@ body{
     background-position: center center;
 }
 
+#a{
+    height: 150px;
+    width: 150px;
+    background-color: white;
+}
+
+#qrcode{
+    padding: 10px;
+}
+
 
 @media only screen and (max-width: 600px) {
     canvas {
