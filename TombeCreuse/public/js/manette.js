@@ -64,8 +64,6 @@ $(function () {
       // si le joueur est en collision afficher un message de fin de partie
       if (player.collision) {
         //si le joueur n'a pas de score, lui donner le score
-        console.log(player.score);
-        console.log(lave.score);
         if (player.score == 0) player.score = lave.score;
         console.log(player.score);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
