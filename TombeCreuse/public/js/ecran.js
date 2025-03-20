@@ -19,6 +19,10 @@ $(function () {
         colorLight: '#fff',
     });
 
+    // Charger une seule fois l'image de lave
+    const laveImage = new Image();
+    laveImage.src = 'images/lave.jpg';
+
     // fonction pour dessiner les joueurs
     function dessinerJoueurs() {
         players.forEach((p) => {
@@ -105,15 +109,13 @@ $(function () {
 
     // quand le serveur envoie un message pour dessiner la lave
     socket.on('drawLave', (lave) => {
-        image = new Image();
-        image.src = 'images/lave.jpg';
         // effacer la lave précédente
         ctx.clearRect(0, lave.y + lave.speed, lave.x, lave.LaveHauteur);
         ctx.clearRect(lave.x + lave.LaveEcart, lave.y + lave.speed, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
         // lave d'un côté
-        ctx.drawImage(image, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
         // lave de l'autre côté
-        ctx.drawImage(image, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
     });
 
     // Mettre à jour le nombre de joueurs et de réponses
