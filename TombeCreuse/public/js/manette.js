@@ -16,6 +16,10 @@ $(function () {
   let progressBar = document.getElementById('progressBar');
   progressBar.style.display = 'none';
 
+  // Charger une seule fois l'image de lave
+  const laveImage = new Image();
+  laveImage.src = 'images/lave.jpg';
+
   // envoyer une requête au serveur pour changer la position du joueur si le joueur n'est pas éliminé
   document.getElementById('slider').addEventListener('input', function () {
     if (!player.collision) {
@@ -48,15 +52,13 @@ $(function () {
     if (!player.collision) {
       // récupérer les informations de la lave
       Lave = lave.tab;
-      image = new Image();
-      image.src = 'images/lave.jpg';
       // effacer la lave précédente
       ctx.clearRect(0, lave.y + lave.speed, lave.x, lave.LaveHauteur);
       ctx.clearRect(lave.x + lave.LaveEcart, lave.y + lave.speed, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
       // lave d'un côté
-      ctx.drawImage(image, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
+      ctx.drawImage(laveImage, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
       // lave de l'autre côté
-      ctx.drawImage(image, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
+      ctx.drawImage(laveImage, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
       // vérifier la collision avec la nouvelle lave
       checkCollision();
       // si le joueur est en collision afficher un message de fin de partie
