@@ -193,4 +193,20 @@ $(function () {
     }
   });
 
+  // Handle reconnection during an ongoing game
+  socket.on('gameState', (state) => {
+    if (state.isGameStarted) {
+      isGameStarted = true;
+      slider.disabled = true;
+      $('h1').text('Partie en cours - Attendez la prochaine partie');
+    } else {
+      isGameStarted = false;
+      slider.disabled = false;
+      $('h1').text('En attente de l\'hôte');
+    }
+  });
+
+  // Request the current game state on reconnect
+  socket.emit('requestGameState');
+
 });

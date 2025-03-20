@@ -7,7 +7,7 @@ $(function () {
     const ctx = canvas.getContext('2d');
     //liste des joueurs
     let players = [];
-    let isGameStarted = false;
+    let isGameStarted = false; // Track the game state
     let progressBar = document.getElementById('progressBar');
     progressBar.style.display = 'none';
     // qr code
@@ -166,6 +166,11 @@ $(function () {
             // dessiner les joueurs
             dessinerJoueurs();
         }
+    });
+
+    // Respond to game state requests from controllers
+    socket.on('requestGameState', () => {
+        socket.emit('gameState', { isGameStarted });
     });
 
 });
