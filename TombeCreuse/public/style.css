@@ -17,6 +17,10 @@ body{
     background-position: center center;
 }
 
+h1{
+    color: white;
+}
+
 #a{
     height: 150px;
     width: 150px;
@@ -31,10 +35,6 @@ body{
     canvas {
         width: 100%;
         height: auto;
-    }
-
-    h1{
-        color: white;
     }
 
     #slider {
@@ -67,6 +67,5 @@ body{
 
     h1 {
         font-size: 18px; /* Ajuster la taille du texte */
-        color: white;
     }
 }
