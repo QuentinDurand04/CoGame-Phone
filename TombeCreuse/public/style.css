@@ -34,3 +34,26 @@ body{
         background-size: cover;
     }
 }
+
+/* Ajout d'une règle pour les petits écrans */
+@media only screen and (max-width: 390px) {
+    body {
+        background-size: cover;
+        font-size: 14px; /* Réduire la taille de la police si nécessaire */
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #slider {
+        width: 90%;
+        margin: 10px auto;
+    }
+
+    h1 {
+        font-size: 18px; /* Ajuster la taille du texte */
+        color: white;
+    }
+}
