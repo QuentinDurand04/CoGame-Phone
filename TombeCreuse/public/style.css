@@ -1,10 +1,33 @@
 canvas {
     display: block;
     margin: 0 auto;
-    background: saddlebrown;
+    background: linear-gradient(to top, #432e20, #8b4513);
 }
 
 #slider {
     display: block;
     margin: 20px auto;
+}
+body{
+    background-image: url('images/img_2.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+
+@media only screen and (max-width: 600px) {
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #slider {
+        width: 90%;
+        margin: 10px auto;
+    }
+
+    body {
+        background-size: contain;
+    }
 }
