@@ -12,7 +12,7 @@ $(function () {
     progressBar.style.display = 'none';
     // qr code
     const qrcode = new QRCode(document.getElementById('qrcode'), {
-        text: 'docketu.iutnc.univ-lorraine.fr:28332/manette',
+        text: 'http://docketu.iutnc.univ-lorraine.fr:28332/ecran',
         width: 128,
         height: 128,
         colorDark: '#000',

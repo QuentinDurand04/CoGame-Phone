@@ -7,9 +7,10 @@ canvas {
 #slider {
     display: block;
     margin: 20px auto;
-    transform: scaleY(1.5);
+    transform: scale(1.25); /* Scale the slider */
     height: 50px; /* Increase the height of the slider */
 }
+
 body{
     background-image: url('images/img_2.png');
     background-size: cover;
@@ -32,6 +33,11 @@ h1{
 }
 
 @media screen and (max-width: 600px) {
+
+    #a{
+        display: none;
+    }
+
     canvas {
         width: 100%;
         height: auto;
@@ -40,7 +46,8 @@ h1{
     #slider {
         width: 90%;
         margin: 10px auto;
-        height: 40px; /* Adjust height for smaller screens */
+        transform: scale(1); /* Reset scale for smaller screens */
+        height: 100px; /* Adjust height for smaller screens */
     }
 
     body {
@@ -50,6 +57,11 @@ h1{
 
 /* Ajout d'une règle pour les petits écrans */
 @media only screen and (max-width: 390px) {
+
+    #a{
+        display: none;
+    }
+    
     body {
         background-size: cover;
         font-size: 14px; /* Réduire la taille de la police si nécessaire */
@@ -62,6 +74,7 @@ h1{
 
     #slider {
         width: 90%;
+        transform: scale(1); /* Réinitialiser l'échelle pour les petits écrans */
         margin: 10px auto;
     }
 
