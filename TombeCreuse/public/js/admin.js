@@ -98,6 +98,7 @@ $(function () {
     // quand le serveur envoie un message pour commencer le jeu
     socket.on('startGame', () => {
         isGameStarted = true;
+        players.forEach(player => player.collision = false);
         document.getElementById('startGame').disabled = true;
         // clear le canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);

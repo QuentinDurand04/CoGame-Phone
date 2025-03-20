@@ -155,7 +155,7 @@ io.on('connection', (socket) => {
             isController = true;
             let color = '#' + Math.floor(Math.random() * 16777215).toString(16);
             let pseudo = info.pseudo ? info.pseudo : socket.id;
-            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false, pseudo: pseudo});
+            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false, pseudo: pseudo });
             nbPlayersAlive++;
             // envoyer un message de nouveux joueur
             io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false, pseudo: pseudo });

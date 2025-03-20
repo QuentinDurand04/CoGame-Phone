@@ -39,7 +39,7 @@ $(function () {
 
   // envoyer une requête au serveur pour changer la position du joueur si le joueur n'est pas éliminé
   document.getElementById('slider').addEventListener('input', function () {
-    if (!player.collision) {
+    if (!player.collision && isGameStarted) {
       socket.emit('sliderServ', { value: this.value, id: socket.id });
     }
   });
@@ -170,7 +170,7 @@ $(function () {
   // quand le joueur appuie sur les touches q ou d
   document.addEventListener('keydown', function (event) {
     const step = 5; // Adjust the step size as needed
-    if ((event.key === 'q' || event.key === 'd') && !player.collision) {
+    if ((event.key === 'q' || event.key === 'd') && !player.collision || !isGameStarted) {
       if (intervalId === null) {
         intervalId = setInterval(() => {
           if (event.key === 'q') {
