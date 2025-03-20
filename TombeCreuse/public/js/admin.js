@@ -2,7 +2,7 @@ $(function () {
     // création d'une connexion websocket
     const socket = io();
     // envoyer un message pour s'identifier
-    socket.emit('identify', 'admin');
+    socket.emit('identify', {type: 'admin'});
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     //liste des joueurs
@@ -38,6 +38,16 @@ $(function () {
         ctx.fillRect(player.x, player.y, 20, 20);
     }
 
+    socket.on('changePseudoServ', (info) => {
+        // changer le pseudo du joueur
+        let player = players.find(player => player.id === info.id);
+        if (player) {
+            player.pseudo = info.pseudo;
+        }
+        // envoyer un message de changement de pseudo à tous les clients
+        io.emit('changePseudoServ', { id: info.id, pseudo: info.pseudo });
+    });
+
     // quand le serveur envoie un message pour la collision
     socket.on('collision', (playerCollison) => {
         // mettre à jour la collision du joueur
@@ -61,7 +71,7 @@ $(function () {
             ctx.textAlign = 'center';
             players.sort((a, b) => b.score - a.score);
             players.slice(0, 10).forEach((player, index) => {
-                ctx.fillText(player.id + ' : ' + player.score, canvas.width / 2, canvas.height / 3 + index * 30);
+                ctx.fillText(player.pseudo + ' : ' + player.score, canvas.width / 2, canvas.height / 3 + index * 30);
             });
         } else {
             // sinon, effacer le joueur en collision
@@ -97,6 +107,7 @@ $(function () {
 
     socket.on('restartGame', () => {
         isGameStarted = true;
+        players.forEach(player => player.collision = false);
         document.getElementById('startGame').disabled = true;
         // clear le canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -136,10 +147,10 @@ $(function () {
     socket.on('newPlayerEcran', (info) => {
         $('#playerCount').text('Joueurs dans la partie : ' + info.count);
         // ajouter un carré de couleur différente sur le canva pour chaque joueur
-        let player = { id: info.id, color: info.color, x: 150, y: 50, collision: true };
+        let player = { id: info.id, color: info.color, x: 150, y: 50, collision: true, pseudo: info.pseudo };
         // si le jeu n'est pas commencé, dessiner le joueur
         if (!isGameStarted) {
-            player = { id: info.id, color: info.color, x: 150, y: 50, collision: false };
+            player = { id: info.id, color: info.color, x: 150, y: 50, collision: false, pseudo: info.pseudo };
             dessinerJoueur(player);
         }
         // ajouter le joueur à la liste des joueurs

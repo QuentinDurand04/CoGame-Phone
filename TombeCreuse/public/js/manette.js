@@ -1,18 +1,35 @@
 $(function () {
   // création d'une connexion websocket
   const socket = io();
+  const pseudoInput = document.getElementById('pseudoInput');
+  const pseudoButton = document.getElementById('pseudoButton');
+  let pseudo = pseudoInput.value? pseudoInput.value : null;
   // envoyer un message pour s'identifier
-  socket.emit('identify', 'manette');
+  socket.emit('identify', {type: 'manette', pseudo: pseudo});
+  pseudo = pseudo? pseudo : 'id';
+  //change the placeholder of the input
+  pseudoInput.placeholder = 'Pseudo : ' + pseudo;
+  //on click change the pseudo
+  pseudoButton.addEventListener('click', () => {
+    if (!isGameStarted){
+      //change the pseudo querie
+      pseudo = pseudoInput.value;
+      //change the placeholder of the input
+      pseudoInput.placeholder = 'Pseudo : ' + pseudo;
+      socket.emit('changePseudo', {pseudo: pseudo, id: socket.id});
+    }
+  });
   // définition des variables
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   let slider = document.getElementById('slider');
   let rand = Math.floor(Math.random() * 256);
   let color = 'rgb(' + rand + ',' + rand + ',' + rand + ')';
-  let player = { x: 150, y: 50, width: 20, height: 20, collision: false, score: 0 };
+  let player = { x: 150, y: 50, width: 20, height: 20, collision: false, score: 0, pseudo: pseudo, color: color };
   let Lave = [];
   let LaveHauteur;
   let LaveEcart;
+  let isGameStarted = false;
   let progressBar = document.getElementById('progressBar');
   progressBar.style.display = 'none';
 
@@ -96,6 +113,7 @@ $(function () {
   });
 
   function startGame() {
+    isGameStarted = true;
     slider.disabled = false;
     player.collision = false;
     player.score = 0;
@@ -116,6 +134,7 @@ $(function () {
   });
 
   socket.on('waitingForRestart', () => {
+    isGameStarted = false;
     progressBar.style.display = 'block';
     // add 1 to the progress bar every second until it reaches 10
     let progress = 0;
@@ -133,6 +152,7 @@ $(function () {
 
   // quand le serveur envoie un message de fin de partie
   socket.on('endGame', () => {
+    isGameStarted = false;
     $('h1').text('Partie terminé');
   });
 

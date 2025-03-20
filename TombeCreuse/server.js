@@ -112,6 +112,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('changePseudo', (info) => {
+        // changer le pseudo du joueur
+        let player = players.find(player => player.id === info.id);
+        if (player) {
+            player.pseudo = info.pseudo;
+        }
+        // envoyer un message de changement de pseudo à tous les clients
+        io.emit('changePseudoServ', { id: info.id, pseudo: info.pseudo });
+    });
+
     // quand un joueur est en collision
     socket.on('collisionServ', (info) => {
         // mettre à jour la collision du joueur et le nombre de joueurs en vie
@@ -138,16 +148,17 @@ io.on('connection', (socket) => {
     });
 
     // quand un joueur se connecte
-    socket.on('identify', (type) => {
+    socket.on('identify', info => {
         // si le joueur est une manette
-        if (type === 'manette') {
+        if (info.type === 'manette') {
             // ajouter le joueur à la liste des joueurs et définir la couleur
             isController = true;
             let color = '#' + Math.floor(Math.random() * 16777215).toString(16);
-            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false });
+            let pseudo = info.pseudo ? info.pseudo : socket.id;
+            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false, pseudo: pseudo});
             nbPlayersAlive++;
             // envoyer un message de nouveux joueur
-            io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false });
+            io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false, pseudo: pseudo });
             io.emit('newPlayerManette', { playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart });
             // si le jeu n'est pas commencé, envoyer un message "En attente de l'hôte"
             if (!isGameStarted || !isGameStarted && players.length < 1) {
