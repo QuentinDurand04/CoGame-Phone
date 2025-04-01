@@ -21,7 +21,7 @@ let globalLave = [];
 const LaveHauteur = 20;
 const LaveEcart = 100;
 let frameCount = 0;
-let speed = 2;
+let speed = 1;
 let animationId = null;
 
 // Route pour servir les fichiers statiques
@@ -73,7 +73,7 @@ function draw() {
         // envoyer un message de fin de partie à tous les clients et réinitialiser les variables
         io.emit('endGame');
         isGameStarted = false;
-        speed = 2;
+        speed = 1;
         frameCount = 0;
         globalLave.length = 0;
         score = 0;
@@ -170,7 +170,7 @@ io.on('connection', (socket) => {
         io.emit('endGame');
         isGameStarted = false;
         score = 0;
-        speed = 2;
+        speed = 1;
         frameCount = 0;
         globalLave.length = 0;
     });
@@ -251,7 +251,7 @@ io.on('connection', (socket) => {
             if (nbPlayersAlive === 0 && isGameStarted) {
                 io.emit('endGame');
                 isGameStarted = false;
-                speed = 2;
+                speed = 1;
                 frameCount = 0;
                 globalLave.length = 0;
                 score = 0;
