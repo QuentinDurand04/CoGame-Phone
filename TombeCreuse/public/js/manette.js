@@ -120,6 +120,7 @@ $(function () {
   function startGame() {
     isGameStarted = true;
     slider.disabled = false;
+    pseudoButton.disabled = true;
     player.collision = false;
     player.score = 0;
     $('h1').text('Partie en cours');
@@ -140,6 +141,7 @@ $(function () {
 
   socket.on('waitingForRestart', () => {
     isGameStarted = false;
+    pseudoButton.disabled = false;
     progressBar.style.display = 'block';
     // add 1 to the progress bar every second until it reaches 10
     let progress = 0;
