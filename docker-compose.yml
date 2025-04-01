@@ -7,7 +7,7 @@ services:
     build:
       context: ./app4
       dockerfile: ../build/Dockerfile
-    restart: always
+    restart: unless-stopped
     networks:
       - CoGame_Phone
     working_dir: /usr/src/app
@@ -22,7 +22,7 @@ services:
     build:
       context: ./TombeCreuse
       dockerfile: ../build/Dockerfile
-    restart: always
+    restart: unless-stopped
     networks:
       - CoGame_Phone
     working_dir: /usr/src/app
