@@ -5,28 +5,30 @@ networks:
 services:
   basqiz:
     build:
-      context: build
-      dockerfile: Dockerfile
+      context: ./app4
+      dockerfile: ../build/Dockerfile
     restart: always
     networks:
       - CoGame_Phone
     working_dir: /usr/src/app
     volumes:
       - ./app4:/usr/src/app
+      - /usr/src/app/node_modules
     ports:
       - "28331:3000"
-    command: node server.js
+    command: sh -c "npm install && node server.js"
 
   tombecreuse:
     build:
-      context: build
-      dockerfile: Dockerfile
+      context: ./TombeCreuse
+      dockerfile: ../build/Dockerfile
     restart: always
     networks:
       - CoGame_Phone
     working_dir: /usr/src/app
     volumes:
       - ./TombeCreuse:/usr/src/app
+      - /usr/src/app/node_modules
     ports:
       - "28332:3000"
-    command: node server.js
+    command: sh -c "npm install && node server.js"
