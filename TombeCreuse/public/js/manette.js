@@ -3,13 +3,47 @@ $(function () {
   const socket = io();
   const pseudoInput = document.getElementById('pseudoInput');
   const pseudoButton = document.getElementById('pseudoButton');
-  let pseudo = pseudoInput.value? pseudoInput.value : null;
+  let pseudo = pseudoInput.value ? pseudoInput.value : null;
+
+  // Récupérer l'ID de session du localStorage s'il existe
+  let sessionID = localStorage.getItem('gameSessionID');
+
   // envoyer un message pour s'identifier
-  socket.emit('identify', {type: 'manette', pseudo: pseudo});
-  pseudo = pseudo? pseudo : 'id';
-  //change the placeholder of the input
-  pseudoInput.placeholder = 'Pseudo : ' + pseudo;
-  //on click change the pseudo
+  socket.emit('identify', {type: 'manette', pseudo: pseudo, sessionID: sessionID});
+
+  // Stocker l'ID de session lorsqu'on le reçoit
+  socket.on('sessionID', (data) => {
+    sessionID = data.sessionID;
+    localStorage.setItem('gameSessionID', sessionID);
+  });
+
+  // Gérer la reconnexion
+  socket.on('reconnectPlayer', (data) => {
+    color = data.color;
+    player.collision = data.collision;
+    player.x = data.x;
+    LaveHauteur = data.LaveHauteur;
+    LaveEcart = data.LaveEcart;
+
+    // Mettre à jour le slider
+    slider.value = player.x;
+
+    // Désactiver le slider si le joueur est en collision
+    if (player.collision) {
+      slider.disabled = true;
+    }
+
+    // Redessiner le joueur
+    dessinerJoueur();
+  });
+
+  // Si une partie est déjà en cours à la connexion
+  socket.on('gameInProgress', () => {
+    isGameStarted = true;
+    player.collision = true;
+    slider.disabled = true;
+    $('h1').text('Partie en cours - Attendez la prochaine partie');
+  });
   pseudoButton.addEventListener('click', () => {
     if (!isGameStarted){
       //change the pseudo querie

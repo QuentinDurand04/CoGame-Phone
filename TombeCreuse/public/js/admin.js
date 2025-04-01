@@ -30,7 +30,14 @@ $(function () {
                 dessinerJoueur(p);
             }
         });
-    }
+    }// Quand un joueur se reconnecte avec un nouvel ID
+    socket.on('updatePlayerID', (info) => {
+        // Trouver et mettre à jour le joueur dans le tableau local
+        let playerIndex = players.findIndex(player => player.id === info.oldID);
+        if (playerIndex !== -1) {
+            players[playerIndex].id = info.newID;
+        }
+    });
 
     // fonction pour dessiner un joueur
     function dessinerJoueur(player) {

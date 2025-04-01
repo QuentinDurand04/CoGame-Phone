@@ -14,6 +14,7 @@ let isGameStarted = false;
 let nbPlayersAlive = 0;
 let timeout;
 let score = 0;
+let playerSessions = {};
 
 // Route pour servir les fichiers statiques
 app.use(express.static('public'));
@@ -26,6 +27,7 @@ app.get('/admin', (req, res) => res.sendFile(__dirname + '/public/admin.html'));
 // quand un client se connecte
 io.on('connection', (socket) => {
     let isController = false;
+    let sessionID = null;
     // liste des laves
     let Lave = [];
     const LaveHauteur = 20;
@@ -149,23 +151,71 @@ io.on('connection', (socket) => {
 
     // quand un joueur se connecte
     socket.on('identify', info => {
-        // si le joueur est une manette
         if (info.type === 'manette') {
-            // ajouter le joueur à la liste des joueurs et définir la couleur
             isController = true;
+
+            // Vérifier si un identifiant de session est fourni
+            if (info.sessionID && playerSessions[info.sessionID]) {
+                // C'est une reconnexion, récupérer l'ancien ID
+                sessionID = info.sessionID;
+                const oldID = playerSessions[sessionID];
+
+                // Trouver l'ancien joueur et le mettre à jour
+                const playerIndex = players.findIndex(p => p.id === oldID);
+                if (playerIndex !== -1) {
+                    // Mettre à jour l'ID du joueur avec le nouveau socket ID
+                    players[playerIndex].id = socket.id;
+
+                    // Mettre à jour la session
+                    playerSessions[sessionID] = socket.id;
+
+                    // Informer les clients de la mise à jour
+                    io.emit('updatePlayerID', { oldID: oldID, newID: socket.id });
+
+                    // Envoyer les informations du joueur au client
+                    socket.emit('reconnectPlayer', {
+                        color: players[playerIndex].color,
+                        collision: players[playerIndex].collision,
+                        x: players[playerIndex].x,
+                        LaveHauteur: LaveHauteur,
+                        LaveEcart: LaveEcart
+                    });
+
+                    return;
+                }
+            }
+
+            // Nouvelle connexion, générer un ID de session
+            sessionID = generateSessionID();
+            playerSessions[sessionID] = socket.id;
+
+            // Enregistrer l'identifiant de session
             let color = '#' + Math.floor(Math.random() * 16777215).toString(16);
             let pseudo = info.pseudo ? info.pseudo : socket.id;
             players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false, pseudo: pseudo });
             nbPlayersAlive++;
-            // envoyer un message de nouveux joueur
+
+            // Envoyer l'ID de session au client
+            socket.emit('sessionID', { sessionID: sessionID });
+
+            // Envoyer les informations du nouveau joueur
             io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false, pseudo: pseudo });
-            io.emit('newPlayerManette', { playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart });
-            // si le jeu n'est pas commencé, envoyer un message "En attente de l'hôte"
+            socket.emit('newPlayerManette', { playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart });
+
+            // Si le jeu n'est pas commencé
             if (!isGameStarted || !isGameStarted && players.length < 1) {
                 io.emit('waitingForHost');
+            } else {
+                // Si la partie est déjà en cours, marquer le joueur comme en collision
+                const player = players.find(p => p.id === socket.id);
+                if (player) {
+                    player.collision = true;
+                    socket.emit('gameInProgress');
+                }
             }
         }
     });
+
 
     //quand le joueur bouge le slider
     socket.on('sliderServ', (info) => {
@@ -181,17 +231,58 @@ io.on('connection', (socket) => {
     });
 
     // quand un joueur se déconnecte
+    // À la déconnexion, nettoyer les données de session
     socket.on('disconnect', () => {
         if (isController) {
             console.log('Socket disconnected : ' + socket.id);
-            // supprimer le joueur de la liste
+
+            // Supprimer le joueur de la liste
             players = players.filter(player => player.id !== socket.id);
-            // envoyer un message de déconnexion à tous les clients
+
+            // Mettre à jour le nombre de joueurs en vie
+            nbPlayersAlive = players.filter(player => !player.collision).length;
+
+            // Si tous les joueurs sont morts, terminer la partie
+            if (nbPlayersAlive === 0 && isGameStarted) {
+                io.emit('endGame');
+                isGameStarted = false;
+                speed = 2;
+                frameCount = 0;
+                Lave.length = 0;
+                score = 0;
+                io.emit('waitingForRestart');
+                //wait 10 seconds before reseting the game
+                timeout = setTimeout(() => {
+                    console.log('Restarting game');
+                    // si au moins un joueur est connecté
+                    if (players.length >= 1) {
+                        // réinitialiser les variables
+                        nbPlayersAlive = players.length;
+                        players.forEach(player => player.collision = false);
+                        // envoyer un message de début de partie à tous les clients
+                        io.emit('restartGame');
+                        isGameStarted = true;
+                        // dessiner la lave
+                        draw();
+                    }
+                }, 10000);
+            }
+
+            // Conserver l'ID de session pendant un certain temps (ex: 5 minutes)
+            if (sessionID) {
+                setTimeout(() => {
+                    delete playerSessions[sessionID];
+                }, 300000); // 5 minutes
+            }
+
+            // Envoyer un message de déconnexion à tous les clients
             io.emit('disconnectPlayer', { players: players, playerID: socket.id });
         }
     });
 });
-
+function generateSessionID() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
 // démarrer le serveur
 server.listen(3000, () => {
     console.log("Server is running");
