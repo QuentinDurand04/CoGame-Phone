@@ -25,6 +25,16 @@ $(function () {
     LaveHauteur = data.LaveHauteur;
     LaveEcart = data.LaveEcart;
 
+    // Mise à jour de l'état des laves lors de la reconnexion
+    if (data.laveState && data.laveState.length > 0) {
+      Lave = data.laveState;
+      // Dessiner toutes les laves existantes
+      for (let i = 0; i < Lave.length; i++) {
+        ctx.drawImage(laveImage, 0, 0, 500, 500, 0, Lave[i].y, Lave[i].x, LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
+      }
+    }
+
     // Mettre à jour le slider
     slider.value = player.x;
 
@@ -38,21 +48,31 @@ $(function () {
   });
 
   // Si une partie est déjà en cours à la connexion
-  socket.on('gameInProgress', () => {
+  socket.on('gameInProgress', (data) => {
     isGameStarted = true;
     player.collision = true;
     slider.disabled = true;
     $('h1').text('Partie en cours - Attendez la prochaine partie');
-  });
-  pseudoButton.addEventListener('click', () => {
-    if (!isGameStarted){
-      //change the pseudo querie
-      pseudo = pseudoInput.value;
-      //change the placeholder of the input
-      pseudoInput.placeholder = 'Pseudo : ' + pseudo;
-      socket.emit('changePseudo', {pseudo: pseudo, id: socket.id});
+
+    // Mise à jour de l'état des laves
+    if (data && data.laveState && data.laveState.length > 0) {
+      Lave = data.laveState;
+      // Dessiner toutes les laves existantes
+      for (let i = 0; i < Lave.length; i++) {
+        ctx.drawImage(laveImage, 0, 0, 500, 500, 0, Lave[i].y, Lave[i].x, LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
+      }
     }
   });
+
+  pseudoButton.addEventListener('click', () => {
+    if (!isGameStarted) {
+        pseudo = pseudoInput.value || `Player ${Math.floor(Math.random() * 1000)}`;
+        pseudoInput.placeholder = 'Pseudo : ' + pseudo;
+        socket.emit('changePseudo', { pseudo: pseudo, id: socket.id });
+    }
+  });
+
   // définition des variables
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
@@ -96,12 +116,14 @@ $(function () {
     }
     player.collision = false;
   }
+
   socket.on('changePseudoServ', (info) => {
     if (info.id === socket.id) {
       player.pseudo = info.pseudo;
       pseudoInput.placeholder = 'Pseudo : ' + info.pseudo;
     }
   });
+
   // quand le serveur envoie un message pour dessiner la lave
   socket.on('drawLave', (lave) => {
     // si le joueur n'est pas en collision
@@ -142,6 +164,17 @@ $(function () {
       LaveEcart = info.LaveEcart;
       //ajouter un carré de couleur sur le canva
       color = info.color;
+
+      // Mise à jour de l'état des laves
+      if (info.laveState && info.laveState.length > 0) {
+        Lave = info.laveState;
+        // Dessiner toutes les laves existantes
+        for (let i = 0; i < Lave.length; i++) {
+          ctx.drawImage(laveImage, 0, 0, 500, 500, 0, Lave[i].y, Lave[i].x, LaveHauteur);
+          ctx.drawImage(laveImage, 0, 0, 500, 500, Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
+        }
+      }
+
       dessinerJoueur();
     }
   });
@@ -181,15 +214,15 @@ $(function () {
     let progress = 0;
     let id = setInterval(frame, 1000);
     function frame() {
-        if (progress === 9) {
-            clearInterval(id);
-            progressBar.style.display = 'none';
-        } else {
-            progress++;
-            progressBar.value = progress;
-        }
+      if (progress === 9) {
+        clearInterval(id);
+        progressBar.style.display = 'none';
+      } else {
+        progress++;
+        progressBar.value = progress;
+      }
     }
-});
+  });
 
   // quand le serveur envoie un message de fin de partie
   socket.on('endGame', () => {
@@ -240,6 +273,20 @@ $(function () {
       isGameStarted = true;
       slider.disabled = true;
       $('h1').text('Partie en cours - Attendez la prochaine partie');
+
+      // Initialiser les variables laves du client avec l'état actuel
+      if (state.laveState && state.laveState.length > 0) {
+        Lave = state.laveState;
+        LaveHauteur = state.LaveHauteur;
+        LaveEcart = state.LaveEcart;
+
+        // Redessiner les laves existantes
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < Lave.length; i++) {
+          ctx.drawImage(laveImage, 0, 0, 500, 500, 0, Lave[i].y, Lave[i].x, LaveHauteur);
+          ctx.drawImage(laveImage, 0, 0, 500, 500, Lave[i].x + LaveEcart, Lave[i].y, canvas.width - Lave[i].x - LaveEcart, LaveHauteur);
+        }
+      }
     } else {
       isGameStarted = false;
       slider.disabled = false;
@@ -249,5 +296,4 @@ $(function () {
 
   // Request the current game state on reconnect
   socket.emit('requestGameState');
-
 });
