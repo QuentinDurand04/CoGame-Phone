@@ -7,6 +7,7 @@ services:
     build:
       context: build
       dockerfile: Dockerfile
+    restart: always
     networks:
       - CoGame_Phone
     working_dir: /usr/src/app
@@ -20,6 +21,7 @@ services:
     build:
       context: build
       dockerfile: Dockerfile
+    restart: always
     networks:
       - CoGame_Phone
     working_dir: /usr/src/app

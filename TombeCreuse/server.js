@@ -13,6 +13,7 @@ let players = [];
 let isGameStarted = false;
 let nbPlayersAlive = 0;
 let timeout;
+let score = 0;
 
 // Route pour servir les fichiers statiques
 app.use(express.static('public'));
@@ -43,7 +44,7 @@ io.on('connection', (socket) => {
         // envoyer la lave à tous les clients
         for (let i = Lave.length - 1; i >= 0; i--) {
             // envoi
-            io.emit('drawLave', { x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave });
+            io.emit('drawLave', { x: Lave[i].x, y: Lave[i].y, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart, speed: speed, tab: Lave, score: score });
             // déplacement de la lave
             Lave[i].y -= speed;
             // supprimer la lave si elle est hors de l'écran
@@ -57,12 +58,15 @@ io.on('connection', (socket) => {
     function draw() {
         // dessiner la lave si le jeu est en cours
         if (isGameStarted && nbPlayersAlive > 0) {
-            drawLave();
+            score += 0.1;
+            // arrondir le score à 2 décimales
+            score = Math.round(score * 100) / 100;
             frameCount++;
             // augmenter la vitesse toutes les 100 frames
             if (frameCount % 100 === 0) {
                 speed += 0.3;
             }
+            drawLave();
             // boucle pour dessiner la lave
             requestAnimationFrame(draw);
             // si tous les joueurs sont éliminés, finir le jeu
@@ -73,6 +77,7 @@ io.on('connection', (socket) => {
             speed = 2;
             frameCount = 0;
             Lave.length = 0;
+            score = 0;
             io.emit('waitingForRestart');
             //wait 10 seconds before reseting the game
             timeout = setTimeout(() => {
@@ -107,14 +112,25 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('changePseudo', (info) => {
+        // Find and update the player in the players array
+        let playerIndex = players.findIndex(player => player.id === info.id);
+        if (playerIndex !== -1) {
+            players[playerIndex].pseudo = info.pseudo;
+            // Broadcast the updated pseudo to all clients
+            io.emit('changePseudoServ', { id: info.id, pseudo: info.pseudo });
+        }
+    });
+
     // quand un joueur est en collision
     socket.on('collisionServ', (info) => {
         // mettre à jour la collision du joueur et le nombre de joueurs en vie
         let player = players.find(player => player.id === info.id);
         player.collision = info.collision;
+        player.score = score;
         nbPlayersAlive--;
         // envoyer un message de collision à tous les clients
-        io.emit('collision', { id: info.id, collision: info.collision });
+        io.emit('collision', { id: info.id, collision: info.collision, score: score });
     });
 
     // quand le joueur clique sur le bouton "Fin"
@@ -125,22 +141,24 @@ io.on('connection', (socket) => {
         // envoyer un message de fin de partie à tous les clients et réinitialiser les variables
         io.emit('endGame');
         isGameStarted = false;
+        score = 0;
         speed = 2;
         frameCount = 0;
         Lave.length = 0;
     });
 
     // quand un joueur se connecte
-    socket.on('identify', (type) => {
+    socket.on('identify', info => {
         // si le joueur est une manette
-        if (type === 'manette') {
+        if (info.type === 'manette') {
             // ajouter le joueur à la liste des joueurs et définir la couleur
             isController = true;
             let color = '#' + Math.floor(Math.random() * 16777215).toString(16);
-            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false });
+            let pseudo = info.pseudo ? info.pseudo : socket.id;
+            players.push({ id: socket.id, x: 150, y: 50, color: color, collision: false, pseudo: pseudo });
             nbPlayersAlive++;
             // envoyer un message de nouveux joueur
-            io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false });
+            io.emit('newPlayerEcran', { count: players.length, id: socket.id, color: color, collision: false, pseudo: pseudo });
             io.emit('newPlayerManette', { playerID: socket.id, color: color, collision: false, LaveHauteur: LaveHauteur, LaveEcart: LaveEcart });
             // si le jeu n'est pas commencé, envoyer un message "En attente de l'hôte"
             if (!isGameStarted || !isGameStarted && players.length < 1) {

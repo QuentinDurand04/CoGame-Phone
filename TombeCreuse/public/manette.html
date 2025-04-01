@@ -2,14 +2,20 @@
 <html>
 <head>
   <title>Manette</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="/socket.io/socket.io.js"></script>
   <link href="style.css" rel="stylesheet" />
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="./js/manette.js"></script>
+  <viewport name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
   <h1>Manette</h1>
   <progress id="progressBar" value="0" max="10"></progress>
+  <div id="pseudo">
+    <input type="text" id="pseudoInput">
+    <button id="pseudoButton">Changer de pseudo</button>
+  </div>
   <canvas id="gameCanvas" width="320" height="480"></canvas>
   <input type="range" class="slider" id="slider" min="0" max="300" value="150">
 </body>

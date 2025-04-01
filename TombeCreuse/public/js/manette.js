@@ -1,24 +1,45 @@
 $(function () {
   // création d'une connexion websocket
   const socket = io();
+  const pseudoInput = document.getElementById('pseudoInput');
+  const pseudoButton = document.getElementById('pseudoButton');
+  let pseudo = pseudoInput.value? pseudoInput.value : null;
   // envoyer un message pour s'identifier
-  socket.emit('identify', 'manette');
+  socket.emit('identify', {type: 'manette', pseudo: pseudo});
+  pseudo = pseudo? pseudo : 'id';
+  //change the placeholder of the input
+  pseudoInput.placeholder = 'Pseudo : ' + pseudo;
+  //on click change the pseudo
+  pseudoButton.addEventListener('click', () => {
+    if (!isGameStarted){
+      //change the pseudo querie
+      pseudo = pseudoInput.value;
+      //change the placeholder of the input
+      pseudoInput.placeholder = 'Pseudo : ' + pseudo;
+      socket.emit('changePseudo', {pseudo: pseudo, id: socket.id});
+    }
+  });
   // définition des variables
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   let slider = document.getElementById('slider');
   let rand = Math.floor(Math.random() * 256);
   let color = 'rgb(' + rand + ',' + rand + ',' + rand + ')';
-  let player = { x: 150, y: 50, width: 20, height: 20, collision: false };
+  let player = { x: 150, y: 50, width: 20, height: 20, collision: false, score: 0, pseudo: pseudo, color: color };
   let Lave = [];
   let LaveHauteur;
   let LaveEcart;
+  let isGameStarted = false;
   let progressBar = document.getElementById('progressBar');
   progressBar.style.display = 'none';
 
+  // Charger une seule fois l'image de lave
+  const laveImage = new Image();
+  laveImage.src = 'images/lave.jpg';
+
   // envoyer une requête au serveur pour changer la position du joueur si le joueur n'est pas éliminé
   document.getElementById('slider').addEventListener('input', function () {
-    if (!player.collision) {
+    if (!player.collision && isGameStarted) {
       socket.emit('sliderServ', { value: this.value, id: socket.id });
     }
   });
@@ -41,31 +62,40 @@ $(function () {
     }
     player.collision = false;
   }
-
+  socket.on('changePseudoServ', (info) => {
+    if (info.id === socket.id) {
+      player.pseudo = info.pseudo;
+      pseudoInput.placeholder = 'Pseudo : ' + info.pseudo;
+    }
+  });
   // quand le serveur envoie un message pour dessiner la lave
   socket.on('drawLave', (lave) => {
     // si le joueur n'est pas en collision
     if (!player.collision) {
       // récupérer les informations de la lave
       Lave = lave.tab;
-      image = new Image();
-      image.src = 'images/lave.jpg';
       // effacer la lave précédente
       ctx.clearRect(0, lave.y + lave.speed, lave.x, lave.LaveHauteur);
       ctx.clearRect(lave.x + lave.LaveEcart, lave.y + lave.speed, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
       // lave d'un côté
-      ctx.drawImage(image, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
+      ctx.drawImage(laveImage, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
       // lave de l'autre côté
-      ctx.drawImage(image, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
+      ctx.drawImage(laveImage, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
       // vérifier la collision avec la nouvelle lave
       checkCollision();
       // si le joueur est en collision afficher un message de fin de partie
       if (player.collision) {
+        //si le joueur n'a pas de score, lui donner le score
+        if (player.score == 0) player.score = lave.score;
+        console.log(player.score);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = '48px serif';
         ctx.fillStyle = 'red';
         ctx.textAlign = 'center';
         ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+        ctx.font = '24px serif';
+        ctx.fillStyle = 'black';
+        ctx.fillText('Score : ' + player.score, canvas.width / 2, canvas.height / 2 + 50);
       }
     }
   });
@@ -88,8 +118,10 @@ $(function () {
   });
 
   function startGame() {
+    isGameStarted = true;
     slider.disabled = false;
     player.collision = false;
+    player.score = 0;
     $('h1').text('Partie en cours');
     // clear le canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -107,6 +139,7 @@ $(function () {
   });
 
   socket.on('waitingForRestart', () => {
+    isGameStarted = false;
     progressBar.style.display = 'block';
     // add 1 to the progress bar every second until it reaches 10
     let progress = 0;
@@ -124,6 +157,7 @@ $(function () {
 
   // quand le serveur envoie un message de fin de partie
   socket.on('endGame', () => {
+    isGameStarted = false;
     $('h1').text('Partie terminé');
   });
 
@@ -141,7 +175,7 @@ $(function () {
   // quand le joueur appuie sur les touches q ou d
   document.addEventListener('keydown', function (event) {
     const step = 5; // Adjust the step size as needed
-    if ((event.key === 'q' || event.key === 'd') && !player.collision) {
+    if ((event.key === 'q' || event.key === 'd') && !player.collision || !isGameStarted) {
       if (intervalId === null) {
         intervalId = setInterval(() => {
           if (event.key === 'q') {
@@ -163,5 +197,21 @@ $(function () {
       intervalId = null;
     }
   });
+
+  // Handle reconnection during an ongoing game
+  socket.on('gameState', (state) => {
+    if (state.isGameStarted) {
+      isGameStarted = true;
+      slider.disabled = true;
+      $('h1').text('Partie en cours - Attendez la prochaine partie');
+    } else {
+      isGameStarted = false;
+      slider.disabled = false;
+      $('h1').text('En attente de l\'hôte');
+    }
+  });
+
+  // Request the current game state on reconnect
+  socket.emit('requestGameState');
 
 });

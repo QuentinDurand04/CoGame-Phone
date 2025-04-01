@@ -1,10 +1,84 @@
 canvas {
     display: block;
     margin: 0 auto;
-    background: saddlebrown;
+    background: linear-gradient(to top, #432e20, #8b4513);
 }
 
 #slider {
     display: block;
     margin: 20px auto;
+    transform: scale(1.25); /* Scale the slider */
+    height: 50px; /* Increase the height of the slider */
+}
+
+body{
+    background-image: url('images/img_2.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+h1, div{
+    color: white;
+}
+
+#a{
+    height: 150px;
+    width: 150px;
+    background-color: white;
+}
+
+#qrcode{
+    padding: 10px;
+}
+
+@media screen and (max-width: 600px) {
+
+    #a{
+        display: none;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #slider {
+        width: 90%;
+        margin: 10px auto;
+        transform: scale(1); /* Reset scale for smaller screens */
+        height: 100px; /* Adjust height for smaller screens */
+    }
+
+    body {
+        background-size: cover;
+    }
+}
+
+/* Ajout d'une règle pour les petits écrans */
+@media only screen and (max-width: 390px) {
+
+    #a{
+        display: none;
+    }
+    
+    body {
+        background-size: cover;
+        font-size: 14px; /* Réduire la taille de la police si nécessaire */
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #slider {
+        width: 90%;
+        transform: scale(1); /* Réinitialiser l'échelle pour les petits écrans */
+        margin: 10px auto;
+    }
+
+    h1 {
+        font-size: 18px; /* Ajuster la taille du texte */
+    }
 }

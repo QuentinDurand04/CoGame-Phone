@@ -2,22 +2,26 @@ $(function () {
     // création d'une connexion websocket
     const socket = io();
     // envoyer un message pour s'identifier
-    socket.emit('identify', 'ecran');
+    socket.emit('identify', {type: 'ecran'});
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     //liste des joueurs
     let players = [];
-    let isGameStarted = false;
+    let isGameStarted = false; // Track the game state
     let progressBar = document.getElementById('progressBar');
     progressBar.style.display = 'none';
     // qr code
     const qrcode = new QRCode(document.getElementById('qrcode'), {
-        text: 'docketu.iutnc.univ-lorraine.fr:28332/manette',
+        text: 'http://docketu.iutnc.univ-lorraine.fr:28332/manette',
         width: 128,
         height: 128,
         colorDark: '#000',
         colorLight: '#fff',
     });
+
+    // Charger une seule fois l'image de lave
+    const laveImage = new Image();
+    laveImage.src = 'images/lave.jpg';
 
     // fonction pour dessiner les joueurs
     function dessinerJoueurs() {
@@ -34,20 +38,37 @@ $(function () {
         ctx.fillRect(player.x, player.y, 20, 20);
     }
 
+    socket.on('changePseudoServ', (info) => {
+        // Find and update the player in the local players array
+        let playerIndex = players.findIndex(player => player.id === info.id);
+        if (playerIndex !== -1) {
+            players[playerIndex].pseudo = info.pseudo;
+        }
+    });
+
     // quand le serveur envoie un message pour la collision
     socket.on('collision', (playerCollison) => {
         // mettre à jour la collision du joueur
         let player = players.find(player => player.id === playerCollison.id);
         player.collision = true;
+        player.score = playerCollison.score;
         // si tous les joueurs sont en collision, finir le jeu
         if (players.every(player => player.collision)) {
             isGameStarted = false;
             // afficher un message de fin de partie
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '48px serif';
+            ctx.font = '24px serif';
             ctx.fillStyle = 'red';
             ctx.textAlign = 'center';
-            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+            // afficher le score des 10 meilleurs joueurs
+            ctx.fillText('Score des 10 meilleurs joueurs', canvas.width / 2, canvas.height / 3 - 50);
+            ctx.font = '12px serif';
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            players.sort((a, b) => b.score - a.score);
+            players.slice(0, 10).forEach((player, index) => {
+                ctx.fillText(player.pseudo + ' : ' + player.score, canvas.width / 2, canvas.height / 3 + index * 30);
+            });
         } else {
             // sinon, effacer le joueur en collision
             ctx.clearRect(player.x, player.y, 20, 20);
@@ -88,6 +109,7 @@ $(function () {
 
     socket.on('restartGame', () => {
         isGameStarted = true;
+        players.forEach(player => player.collision = false);
         // clear le canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // dessiner les joueurs
@@ -96,25 +118,23 @@ $(function () {
 
     // quand le serveur envoie un message pour dessiner la lave
     socket.on('drawLave', (lave) => {
-        image = new Image();
-        image.src = 'images/lave.jpg';
         // effacer la lave précédente
         ctx.clearRect(0, lave.y + lave.speed, lave.x, lave.LaveHauteur);
         ctx.clearRect(lave.x + lave.LaveEcart, lave.y + lave.speed, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
         // lave d'un côté
-        ctx.drawImage(image, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
         // lave de l'autre côté
-        ctx.drawImage(image, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
     });
 
     // Mettre à jour le nombre de joueurs et de réponses
     socket.on('newPlayerEcran', (info) => {
         $('#playerCount').text('Joueurs dans la partie : ' + info.count);
         // ajouter un carré de couleur différente sur le canva pour chaque joueur
-        let player = { id: info.id, color: info.color, x: 150, y: 50, collision: true };
+        let player = { id: info.id, color: info.color, x: 150, y: 50, collision: true, pseudo: info.pseudo };
         // si le jeu n'est pas commencé, dessiner le joueur
         if (!isGameStarted) {
-            player = { id: info.id, color: info.color, x: 150, y: 50, collision: false };
+            player = { id: info.id, color: info.color, x: 150, y: 50, collision: false, pseudo: info.pseudo };
             dessinerJoueur(player);
         }
         // ajouter le joueur à la liste des joueurs
@@ -145,6 +165,11 @@ $(function () {
             // dessiner les joueurs
             dessinerJoueurs();
         }
+    });
+
+    // Respond to game state requests from controllers
+    socket.on('requestGameState', () => {
+        socket.emit('gameState', { isGameStarted });
     });
 
 });
