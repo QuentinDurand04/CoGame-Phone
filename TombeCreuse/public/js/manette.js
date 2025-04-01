@@ -62,7 +62,12 @@ $(function () {
     }
     player.collision = false;
   }
-
+  socket.on('changePseudoServ', (info) => {
+    if (info.id === socket.id) {
+      player.pseudo = info.pseudo;
+      pseudoInput.placeholder = 'Pseudo : ' + info.pseudo;
+    }
+  });
   // quand le serveur envoie un message pour dessiner la lave
   socket.on('drawLave', (lave) => {
     // si le joueur n'est pas en collision

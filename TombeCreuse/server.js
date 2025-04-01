@@ -113,13 +113,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('changePseudo', (info) => {
-        // changer le pseudo du joueur
-        let player = players.find(player => player.id === info.id);
-        if (player) {
-            player.pseudo = info.pseudo;
+        // Find and update the player in the players array
+        let playerIndex = players.findIndex(player => player.id === info.id);
+        if (playerIndex !== -1) {
+            players[playerIndex].pseudo = info.pseudo;
+            // Broadcast the updated pseudo to all clients
+            io.emit('changePseudoServ', { id: info.id, pseudo: info.pseudo });
         }
-        // envoyer un message de changement de pseudo à tous les clients
-        io.emit('changePseudoServ', { id: info.id, pseudo: info.pseudo });
     });
 
     // quand un joueur est en collision

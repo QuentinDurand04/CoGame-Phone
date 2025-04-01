@@ -39,13 +39,12 @@ $(function () {
     }
 
     socket.on('changePseudoServ', (info) => {
-        console.log('changePseudo', info);
-        // changer le pseudo du joueur
-        let player = players.find(player => player.id === info.id);
-        if (player) {
-            player.pseudo = info.pseudo;
+        // Find and update the player in the local players array
+        let playerIndex = players.findIndex(player => player.id === info.id);
+        if (playerIndex !== -1) {
+            players[playerIndex].pseudo = info.pseudo;
         }
-    })
+    });
 
     // quand le serveur envoie un message pour la collision
     socket.on('collision', (playerCollison) => {
