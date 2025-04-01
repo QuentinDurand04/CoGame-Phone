@@ -50,18 +50,39 @@ $(function () {
     ctx.fillRect(player.x, 50, 20, 20);
   }
 
-  // fonction pour vérifier la collision
+// In manette.js, modify the check collision function
   function checkCollision() {
-    // vérifier si le joueur est en collision avec la lave
-    if (!(player.x >= Lave[0].x && player.x <= Lave[0].x + LaveEcart - 20) && Lave[0].y <= player.y && player.y <= Lave[0].y + LaveHauteur) {
-      // changer la valeur de collision à true et envoyer un message au serveur
-      slider.disabled = true;
-      player.collision = true;
-      socket.emit('collisionServ', { id: socket.id, collision: true });
-      return;
+    // Only perform the check if we have lava data and the game is running
+    if (Lave.length > 0 && isGameStarted && !player.collision) {
+      // Check collision even when tab is not focused
+      if (!(player.x >= Lave[0].x && player.x <= Lave[0].x + LaveEcart - 20) &&
+          Lave[0].y <= player.y && player.y <= Lave[0].y + LaveHauteur) {
+
+        // Register collision and notify server
+        slider.disabled = true;
+        player.collision = true;
+
+        // Send the collision event to the server immediately
+        socket.emit('collisionServ', { id: socket.id, collision: true });
+
+        // Update the UI to show game over
+        updateGameOverUI(player.score);
+        return true;
+      }
     }
-    player.collision = false;
+    return false;
   }
+  function updateGameOverUI(finalScore) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '48px serif';
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+    ctx.font = '24px serif';
+    ctx.fillStyle = 'black';
+    ctx.fillText('Score : ' + finalScore, canvas.width / 2, canvas.height / 2 + 50);
+  }
+
   socket.on('changePseudoServ', (info) => {
     if (info.id === socket.id) {
       player.pseudo = info.pseudo;
@@ -70,33 +91,31 @@ $(function () {
   });
   // quand le serveur envoie un message pour dessiner la lave
   socket.on('drawLave', (lave) => {
-    // si le joueur n'est pas en collision
-    if (!player.collision) {
-      // récupérer les informations de la lave
-      Lave = lave.tab;
-      // effacer la lave précédente
-      ctx.clearRect(0, lave.y + lave.speed, lave.x, lave.LaveHauteur);
-      ctx.clearRect(lave.x + lave.LaveEcart, lave.y + lave.speed, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
-      // lave d'un côté
-      ctx.drawImage(laveImage, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
-      // lave de l'autre côté
-      ctx.drawImage(laveImage, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
-      // vérifier la collision avec la nouvelle lave
+    // Store lava data even if not drawing
+    Lave = lave.tab;
+    LaveHauteur = lave.LaveHauteur;
+    LaveEcart = lave.LaveEcart;
+
+    // Check for collisions regardless of UI update
+    if (!player.collision && isGameStarted) {
       checkCollision();
-      // si le joueur est en collision afficher un message de fin de partie
-      if (player.collision) {
-        //si le joueur n'a pas de score, lui donner le score
-        if (player.score == 0) player.score = lave.score;
-        console.log(player.score);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = '48px serif';
-        ctx.fillStyle = 'red';
-        ctx.textAlign = 'center';
-        ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
-        ctx.font = '24px serif';
-        ctx.fillStyle = 'black';
-        ctx.fillText('Score : ' + player.score, canvas.width / 2, canvas.height / 2 + 50);
+
+      // Only if no collision and tab is focused, update the UI
+      if (!player.collision) {
+        // Clear previous lava
+        ctx.clearRect(0, lave.y + lave.speed, lave.x, lave.LaveHauteur);
+        ctx.clearRect(lave.x + lave.LaveEcart, lave.y + lave.speed, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
+
+        // Draw new lava
+        ctx.drawImage(laveImage, 0, 0, 500, 500, 0, lave.y, lave.x, lave.LaveHauteur);
+        ctx.drawImage(laveImage, 0, 0, 500, 500, lave.x + lave.LaveEcart, lave.y, canvas.width - lave.x - lave.LaveEcart, lave.LaveHauteur);
       }
+    }
+
+    // If just collided, update the score
+    if (player.collision && player.score === 0) {
+      player.score = lave.score;
+      updateGameOverUI(player.score);
     }
   });
 

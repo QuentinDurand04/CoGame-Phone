@@ -123,14 +123,42 @@ io.on('connection', (socket) => {
     });
 
     // quand un joueur est en collision
+    // In server.js, modify the collision handling
     socket.on('collisionServ', (info) => {
-        // mettre à jour la collision du joueur et le nombre de joueurs en vie
+        // Find the player and update their collision state
         let player = players.find(player => player.id === info.id);
-        player.collision = info.collision;
-        player.score = score;
-        nbPlayersAlive--;
-        // envoyer un message de collision à tous les clients
-        io.emit('collision', { id: info.id, collision: info.collision, score: score });
+        if (player) {
+            player.collision = info.collision;
+            player.score = score;
+            nbPlayersAlive--;
+
+            // Force an immediate update to all clients
+            io.emit('collision', { id: info.id, collision: info.collision, score: score });
+
+            // Check if all players are eliminated
+            if (nbPlayersAlive <= 0) {
+                // End the game immediately
+                io.emit('endGame');
+                isGameStarted = false;
+                speed = 2;
+                frameCount = 0;
+                Lave.length = 0;
+                score = 0;
+                io.emit('waitingForRestart');
+
+                // Start the restart countdown
+                timeout = setTimeout(() => {
+                    console.log('Restarting game');
+                    if (players.length >= 1) {
+                        nbPlayersAlive = players.length;
+                        players.forEach(player => player.collision = false);
+                        io.emit('restartGame');
+                        isGameStarted = true;
+                        draw();
+                    }
+                }, 10000);
+            }
+        }
     });
 
     // quand le joueur clique sur le bouton "Fin"
