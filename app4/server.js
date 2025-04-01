@@ -13,14 +13,7 @@ const io = require("socket.io")(server, {
 const fs = require('fs');
 
 let questions = [];
-let currentQuestionIndex = 0;
-let responses = {};
-let timer;
-let timeLeft = 15;
-let isTimerRunning = false;
-let isGameStarted = false;
 const rooms = {};
-let nbJoueur = 0;
 
 fs.readFile('questions.json', 'utf8', (err, data) => {
     if (err) throw err;
@@ -66,65 +59,85 @@ app.get('/BasQiZ/ecran', (req, res) => {
     }
 });
 
-function startTimer() {
-    if (isTimerRunning) return;
-    isTimerRunning = true;
+function startTimer(roomID) {
+    const room = rooms[roomID];
+    if (!room || room.isTimerRunning) return;
+    
+    room.isTimerRunning = true;
+    room.timeLeft = 15;
+    io.to(roomID).emit('updateTimer', room.timeLeft);
 
-    timeLeft = 15;
-    io.emit('updateTimer', timeLeft);
+    room.timer = setInterval(() => {
+        room.timeLeft -= 1;
+        io.to(roomID).emit('updateTimer', room.timeLeft);
 
-    timer = setInterval(() => {
-        timeLeft -= 1;
-        io.emit('updateTimer', timeLeft);
-
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            revealAnswer();
-            setTimeout(nextQuestion, 2000);
+        if (room.timeLeft <= 0) {
+            clearInterval(room.timer);
+            revealAnswer(roomID);
+            setTimeout(() => nextQuestion(roomID), 2000);
         }
     }, 1000);
 }
 
-function resetTimer() {
-    clearInterval(timer);
-    timeLeft = 15;
-    io.emit('updateTimer', timeLeft);
+function resetTimer(roomID) {
+    const room = rooms[roomID];
+    if (!room) return;
+    
+    clearInterval(room.timer);
+    room.timeLeft = 15;
+    io.to(roomID).emit('updateTimer', room.timeLeft);
 }
 
-function resetQuestion() {
-    io.emit('newQuestion', { question: "En attente de joueurs...", answers: [] });
+function resetQuestion(roomID) {
+    io.to(roomID).emit('newQuestion', { question: "En attente de joueurs...", answers: [] });
 }
 
-function nextQuestion() {
-    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-    responses = {};
-    io.emit('newQuestion', questions[currentQuestionIndex]);
-    io.emit('updateResponseCount', 0);
-    isTimerRunning = false;
-    startTimer();
+function nextQuestion(roomID) {
+    const room = rooms[roomID];
+    if (!room) return;
+
+    room.currentQuestionIndex = (room.currentQuestionIndex + 1) % questions.length;
+    room.responses = {};
+    io.to(roomID).emit('newQuestion', questions[room.currentQuestionIndex]);
+    io.to(roomID).emit('updateResponseCount', 0);
+    room.isTimerRunning = false;
+    startTimer(roomID);
 }
 
-function revealAnswer() {
-    clearInterval(timer);
-    const correctIndex = questions[currentQuestionIndex].correctIndex;
-    io.emit('revealAnswer', correctIndex);
+function revealAnswer(roomID) {
+    const room = rooms[roomID];
+    if (!room) return;
+
+    clearInterval(room.timer);
+    const correctIndex = questions[room.currentQuestionIndex].correctIndex;
+    io.to(roomID).emit('revealAnswer', correctIndex);
 }
 
 io.on('connection', (socket) => {
+    console.log(`Nouvelle connexion: ${socket.id}`);
 
     socket.on('createRoom', () => {
         const roomID = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
         if (!rooms[roomID]) {
-            rooms[roomID] = { players: [] };
-            console.log(`Salle ${roomID} créée.`);
+            rooms[roomID] = { 
+                players: [],
+                host: socket.id,
+                screen: null,
+                currentQuestionIndex: 0,
+                responses: {},
+                timer: null,
+                timeLeft: 15,
+                isTimerRunning: false,
+                isGameStarted: false
+            };
+            console.log(`Salle ${roomID} créée par ${socket.id}`);
         }
         socket.join(roomID);
-        
+        socket.roomID = roomID;
         socket.emit('idRoom', roomID);  
     });
 
     socket.on('existRoom', ({ idRoom }) => {
-    
         if (rooms[idRoom]) {
             socket.emit('yesRoom');
         } else {
@@ -132,108 +145,153 @@ io.on('connection', (socket) => {
         }
     });
 
-
     socket.on('joinRoom', ({ name, idRoom }) => {
         if (rooms[idRoom]) {
             socket.join(idRoom);
-            rooms[idRoom].players.push(name);
-            nbJoueur = rooms[idRoom].players.length;
-            io.emit('updatePlayerCount', nbJoueur, name);
-            console.log(`Joueur ${name} rejoint la salle ${idRoom}`);
+            socket.roomID = idRoom;
+            socket.playerName = name;
+            
+            if (name === 'Ecran') {
+                rooms[idRoom].screen = socket.id;
+                console.log(`Écran rejoint la salle ${idRoom}`);
+                socket.emit('updatePlayerList', rooms[idRoom].players.map(p => p.name));
+            } else {
+                const existingPlayerIndex = rooms[idRoom].players.findIndex(p => p.name === name);
+                if (existingPlayerIndex === -1) {
+                    rooms[idRoom].players.push({ id: socket.id, name: name });
+                } else {
+                    rooms[idRoom].players[existingPlayerIndex].id = socket.id;
+                }
+                
+                io.to(idRoom).emit('updatePlayerCount', rooms[idRoom].players.length);
+                io.to(idRoom).emit('updatePlayerList', rooms[idRoom].players.map(p => p.name));
+
+                const room = rooms[idRoom];
+                if (room.isGameStarted) {
+                    socket.emit('newQuestion', questions[room.currentQuestionIndex]);
+                    socket.emit('updateTimer', room.timeLeft);
+                } else {
+                    socket.emit('waitingForHost', 'En attente de l\'hôte...');
+                }
+
+                console.log(`Joueur ${name} rejoint la salle ${idRoom}`);
+            }
         } else {
             console.log(`Salle ${idRoom} non trouvée ou ${name} non défini`);
+            socket.emit('noRoom');
         }
     });
 
-
-
     socket.on('response', (answerIndex) => {
-            responses[socket.id] = answerIndex;
-            io.emit('updateResponseCount', Object.keys(responses).length);
+        if (socket.roomID && rooms[socket.roomID]) {
+            const room = rooms[socket.roomID];
+            room.responses[socket.id] = answerIndex;
+            io.to(socket.roomID).emit('updateResponseCount', Object.keys(room.responses).length);
 
-            if (Object.keys(responses).length === nbJoueur) {
-                clearInterval(timer);
-                io.emit('updateTimer', 0);
-                revealAnswer();
-                setTimeout(nextQuestion, 3000);
+            if (Object.keys(room.responses).length === room.players.length) {
+                clearInterval(room.timer);
+                io.to(socket.roomID).emit('updateTimer', 0);
+                revealAnswer(socket.roomID);
+                setTimeout(() => nextQuestion(socket.roomID), 3000);
             }
+        }
     });
 
     socket.on('startGame', () => {
-        if (!isGameStarted && nbJoueur > 0) {
-            io.emit('waitingForHost', '');
-            isGameStarted = true;
-            nextQuestion();
+        if (socket.roomID && rooms[socket.roomID]) {
+            const room = rooms[socket.roomID];
+            if (!room.isGameStarted && room.players.length > 0) {
+                io.to(socket.roomID).emit('waitingForHost', '');
+                room.isGameStarted = true;
+                nextQuestion(socket.roomID);
+            }
         }
     });
 
     socket.on('stopGame', () => {
-        io.emit('waitingForHost', 'En attente de l\'hôte...');
-        isTimerRunning = false;
-        resetTimer();
-        resetQuestion();
-        isGameStarted = false;
-    });
-
-    socket.on('disconnection', (name) => {
-
-        const roomID = Object.keys(rooms).find(roomID => rooms[roomID].players.includes(name));
-
-        if (roomID) {
-            const room = rooms[roomID];
-            nbJoueur = room.players.length;;
-
-            room.players = room.players.filter(id => id !== name);
-            nbJoueur = room.players.length;
-            io.emit('updatePlayerCount', nbJoueur, name);
-            console.log(`Joueur ${name} a quitté la salle ${roomID}`);
-
-            if(nbJoueur < 2){
-                io.emit('waitingForHost', 'Pas assez de joueurs pour continuer la partie');
-                isTimerRunning = false;
-                resetTimer();
-                resetQuestion();
-                isGameStarted = false;
-            }
-
-            if (nbJoueur === 0) {
-                delete rooms[roomID];
-                console.log(`Salle ${roomID} supprimée.`);
-                io.emit('delete');
-            }
-        } else {
-            console.log(`Aucune donnée trouvée pour le socket ${name}`);
+        if (socket.roomID && rooms[socket.roomID]) {
+            const room = rooms[socket.roomID];
+            io.to(socket.roomID).emit('waitingForHost', 'En attente de l\'hôte...');
+            room.isTimerRunning = false;
+            resetTimer(socket.roomID);
+            resetQuestion(socket.roomID);
+            room.isGameStarted = false;
         }
     });
+
+    socket.on('disconnection', (playerName) => {
+        if (socket.roomID && rooms[socket.roomID]) {
+            const room = rooms[socket.roomID];
+            const playerIndex = room.players.findIndex(p => p.name === playerName);
+            
+            if (playerIndex !== -1) {
+                room.players.splice(playerIndex, 1);
                 
-    
-
-    /*socket.on('disconnect', () => { 
-        console.log(`Joueur ${socket.id} déconnecté de la salle`);
-        // Parcourir toutes les salles
-        for (const roomID in rooms) {
-            const room = rooms[roomID];
-            // Vérifier si le joueur est dans la salle
-            if (room.players.includes(socket.id)) {
-                // Supprimer le joueur de la liste
-                room.players = room.players.filter(id => id !== socket.id);
-    
-                // Mettre à jour le compteur de joueurs
-                io.to(roomID).emit('updatePlayerCount', room.players.length);
-                console.log(`Nombre de joueurs dans la salle ${roomID}: ${room.players.length}`);
-    
-                // Supprimer la salle si elle est vide et que l'hôte s'est déconnecté
-                if (room.players.length === 0 && room.host === socket.id) {
-                    delete rooms[roomID];
-                    console.log(`Salle ${roomID} supprimée.`);
+                io.to(socket.roomID).emit('updatePlayerCount', room.players.length);
+                io.to(socket.roomID).emit('updatePlayerList', room.players.map(p => p.name));
+                
+                if (room.host === socket.id) {
+                    if (room.players.length > 0) {
+                        room.host = room.players[0].id;
+                    } else {
+                        delete rooms[socket.roomID];
+                        console.log(`Salle ${socket.roomID} supprimée car vide`);
+                    }
                 }
-                break;  // Arrêter la boucle après avoir trouvé le joueur
+                
+                if (room.players.length < 2) {
+                    io.to(socket.roomID).emit('waitingForHost', 'Pas assez de joueurs pour continuer la partie');
+                    room.isTimerRunning = false;
+                    resetTimer(socket.roomID);
+                    resetQuestion(socket.roomID);
+                    room.isGameStarted = false;
+                }
             }
         }
-    });*/
-    
-    
-    
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`Déconnexion: ${socket.id}`);
+        
+        if (socket.roomID && rooms[socket.roomID]) {
+            const room = rooms[socket.roomID];
+            
+            if (room.screen === socket.id) {
+                room.screen = null;
+                console.log(`Écran déconnecté de la salle ${socket.roomID}`);
+                io.to(socket.roomID).emit('screenDisconnected');
+                room.isTimerRunning = false;
+                resetTimer(socket.roomID);
+                resetQuestion(socket.roomID);
+                room.isGameStarted = false;
+            } else {
+                const playerIndex = room.players.findIndex(p => p.id === socket.id);
+                if (playerIndex !== -1) {
+                    room.players.splice(playerIndex, 1);
+                    
+                    io.to(socket.roomID).emit('updatePlayerCount', room.players.length);
+                    io.to(socket.roomID).emit('updatePlayerList', room.players.map(p => p.name));
+                    
+                    if (room.host === socket.id) {
+                        if (room.players.length > 0) {
+                            room.host = room.players[0].id;
+                        } else {
+                            delete rooms[socket.roomID];
+                            console.log(`Salle ${socket.roomID} supprimée car vide`);
+                        }
+                    }
+                    
+                    if (room.players.length < 2) {
+                        io.to(socket.roomID).emit('waitingForHost', 'Pas assez de joueurs pour continuer la partie');
+                        room.isTimerRunning = false;
+                        resetTimer(socket.roomID);
+                        resetQuestion(socket.roomID);
+                        room.isGameStarted = false;
+                    }
+                }
+            }
+        }
+    });
 });
 
 server.listen(3000, () => {
