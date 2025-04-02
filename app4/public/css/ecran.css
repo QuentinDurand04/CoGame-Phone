@@ -1,3 +1,144 @@
+@import 'variables.css';
+
+.ecran-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--background-color) 0%, var(--primary-light) 100%);
+}
+
+.game-container {
+    background-color: var(--surface-color);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+}
+
+.question {
+    font-size: var(--font-size-2xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xl);
+    font-weight: 700;
+}
+
+.answers-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    width: 100%;
+}
+
+.answer-box {
+    background-color: var(--surface-color);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    transition: var(--transition-normal);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.answer-box.correct {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+.answer-box.incorrect {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.timer {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    font-weight: 1000;
+}
+
+.players-container {
+    flex: 1;
+    background-color: var(--surface-color);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.players-title {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+}
+
+.players-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.player-tag {
+    background-color: var(--primary-color);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-md);
+}
+
+.controls {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.waiting-message {
+    text-align: center;
+    font-size: var(--font-size-xl);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .answers-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .game-container {
+        margin: var(--spacing-md);
+        padding: var(--spacing-lg);
+    }
+    
+    .controls {
+        position: static;
+        margin-top: var(--spacing-lg);
+        justify-content: center;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .qrcode-container {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
 .A{
     width: 50%;
     height: 10em;
@@ -19,13 +160,12 @@
     padding: 20px;
     text-align: center;
 }
+
 html, body {
     height: 100%;
     margin: 0;
-    background: linear-gradient(13deg, rgba(255,0,181,1) 0%, rgba(255,109,0,1) 50%, rgba(211,47,47,1) 100%);
-    background-size: cover;
-
 }
+
 #answers {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -33,6 +173,7 @@ html, body {
     width: 100%;
     padding: 0;
 }
+
 #answers div {
     border: 1px solid #000;
     padding: 20px;
@@ -48,16 +189,19 @@ html, body {
     width: 100%;
     padding: 0;
 }
+
 #buttons button {
 
     padding: 20px;
     text-align: center;
     margin: 10px 0;
 }
+
 button {
     border: 1px solid #000;
     background-color: transparent;
 }
+
 button:disabled {
     background: rgba(211,47,47, 0.3);
     color: black;
@@ -118,6 +262,45 @@ button:hover{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.room-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    width: 100%;
+    margin-bottom: var(--spacing-xl);
+}
+
+.qrcode-container {
+    background-color: var(--surface-color);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+#qrcode {
+    background-color: white;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+#qrcode img {
+    display: block;
+    margin: 0 auto;
 }
 
 

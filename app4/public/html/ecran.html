@@ -2,35 +2,50 @@
 <html>
 <head>
     <title>Écran Principal</title>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/variables.css">
     <link rel="stylesheet" type="text/css" href="../css/ecran.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="../js/ecran.js" defer></script>
 </head>
 <body onload="room()">
-    <div class="container">
-    <h1>Écran Principal</h1>
-    <div id="room">id de la room :</div>
+    <div class="ecran-container">
+        <div class="game-container">
+            <h1 class="title">Écran Principal</h1>
+            
+            <div class="room-info">
+                <div id="room">ID de la room :</div>
+            </div>
+
+            <div class="info-row">
+                <div id="qrcode" class="qrcode-container"></div>
+                <div class="players-container">
+                    <h2 class="players-title">Joueurs</h2>
+                    <div class="players">
+                        <div id="playerCount">Nombre de joueurs dans la partie : 0</div>
+                        <div id="responseCount">Réponses reçues : 0</div>
+                        <div id="joueurs">Nom des joueurs dans la partie :</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timer-container">
+                <h2 class="timer">Temps restant : <span id="timer">15</span> secondes</h2>
+                <progress id="file" max="15" value="15"></progress>
+            </div>
+
+            <div class="question-container">
+                <div id="questiongrid">
+                    <h2 id="question" class="question">En attente de joueurs...</h2>
+                </div>
+                <div id="answers" class="answers-container"></div>
+            </div>
+
+            <div class="controls">
+                <button id="retour" class="btn btn-danger">Retour</button>
+            </div>
+        </div>
     </div>
-    <div class="containerPlayers">
-    <div class="players">
-    <div id="playerCount">Nombres de joueurs dans la partie : 0</div>
-    <div id="responseCount">Réponses reçues : 0</div>
-    </div>
-    <div id="joueurs">Nom des joueurs dans la partie : </div>
-    </div>
-    <div class="container">
-    <div>
-        <h2>Temps restant : <span id="timer">15</span> secondes</h2>
-    </div>
-    <progress id="file" max="15" value=15></progress>
-    <div class="buttons">
-    <button id="retour">Retour</button>
-    </div>
-    </div>
-    <div class="grid">
-    <div id="questiongrid"><h2 id="question">En attente de joueurs...</h2></div>
-    <ul id="answers"></ul>
-    </div>
-    </body>
+</body>
 </html>

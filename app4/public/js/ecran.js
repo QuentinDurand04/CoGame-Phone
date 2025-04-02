@@ -84,4 +84,11 @@ $(function () {
     $('#retour').on('click', () => {
         window.location.href = '/BasQiZ/choix';
     });
+    const qrcode = new QRCode(document.getElementById('qrcode'), {
+        text: 'http://localhost:3000/BasQiZ/nom?idRoom='+idRoom,
+        width: 128,
+        height: 128,
+        colorDark: '#000',
+        colorLight: '#fff',
+    });
 });

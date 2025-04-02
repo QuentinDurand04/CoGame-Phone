@@ -2,18 +2,21 @@
 <html>
 <head>
     <title>Choisissez un pseudo</title>
+    <link rel="stylesheet" type="text/css" href="../css/variables.css">
+    <link rel="stylesheet" type="text/css" href="../css/nom.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="../js/nom.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="../css/nom.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Choisissez un pseudo</h1>
-        <div class="nom">
-            <input type="text" id="name" name="name" placeholder="Ex : Fefe54">
-            <button id="joinRoomButton">Valider</button>
+    <div class="nom-container">
+        <div class="form-container">
+            <h1 class="title">Choisissez un pseudo</h1> 
+            <div class="input-group">
+                <input type="text" id="name" name="name" class="input" placeholder="Ex : Fefe54">
+                <button id="joinRoomButton" class="btn-submit">Valider</button>
+            </div>
+            <button id="retour" class="btn btn-danger">Retour</button>
         </div>
-        <button id="retour">Retour</button>
     </div>
 </body>
 </html>

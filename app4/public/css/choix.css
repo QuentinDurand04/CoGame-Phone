@@ -1,3 +1,75 @@
+@import 'variables.css';
+
+.choix-container {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--background-color) 0%, var(--primary-light) 100%);
+}
+
+.title {
+    font-size: var(--font-size-2xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+    font-weight: 700;
+}
+
+.buttons-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.choice-button {
+    background-color: var(--surface-color);
+    border: none;
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.choice-button:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.choice-button i {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-sm);
+}
+
+.choice-button span {
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .buttons-container {
+        grid-template-columns: 1fr;
+        padding: var(--spacing-md);
+    }
+    
+    .choice-button {
+        padding: var(--spacing-lg);
+    }
+}
+
 .A{
     width: 50%;
     height: 10em;
@@ -27,13 +99,12 @@
     padding: 20px;
     text-align: center;
 }
+
 html, body {
     height: 100%;
     margin: 0;
-    background: linear-gradient(13deg, rgba(255,0,181,1) 0%, rgba(255,109,0,1) 50%, rgba(211,47,47,1) 100%);
-    background-size: cover;
-
 }
+
 #answers {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -98,6 +169,32 @@ button:hover{
 p{
     padding: 2%;
     margin: 0;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.form-container input {
+    width: 100%;
+    max-width: 200px;
+    padding: var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-md);
+}
+
+
+#joinRoomButton {
+    width: 80%;
+    max-width: 200px;
+    margin: var(--spacing-lg) auto;
 }
 
 

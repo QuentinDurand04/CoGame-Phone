@@ -7,28 +7,13 @@ $(document).ready(function() {
     let selectedAnswerIndex = null;
     let isQuestionActive = false;
 
-    function createDisconnectButton() {
-        return $('<button>')
-            .addClass('btn btn-danger mt-3')
-            .text('Se déconnecter')
-            .on('click', function(e) {
-                e.preventDefault();
-                if (socket.roomID) {
-                    socket.emit('disconnection', playerName);
-                    window.location.href = '/BasQiZ/choix';
-                }
-            });
-    }
-
-    function displayScore() {
-        return $('<div>')
-            .addClass('text-center mb-3')
-            .html(`<h3>Score: ${score}</h3>`);
+    function updateScore() {
+        $('#score').text(`${score} point${score > 1 ? 's' : ''}`);
     }
 
     function showScreenDisconnectedMessage() {
-        $('.container').html(`
-            <div class="text-center">
+        $('.manette-container').html(`
+            <div class="question-container">
                 <h2 class="text-danger mb-4">L'écran associé à la room s'est déconnecté</h2>
                 <p class="mb-4">Veuillez revenir à la page d'accueil pour continuer à jouer</p>
                 <button class="btn btn-primary" onclick="window.location.href='/BasQiZ/choix'">Retour à l'accueil</button>
@@ -48,27 +33,23 @@ $(document).ready(function() {
         selectedAnswerIndex = null;
         isQuestionActive = true;
         
-        $('.container').html(`
-            <div class="text-center">
-                <h2 class="mb-4">${question.question}</h2>
-                <div class="row justify-content-center">
-                    ${question.answers.map((answer, index) => `
-                        <div class="col-md-6 mb-3">
-                            <button class="btn btn-primary btn-lg w-100" onclick="submitAnswer(${index})">
-                                ${answer}
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `);
-        $('.container').append(displayScore());
-        $('.container').append(createDisconnectButton());
+        $('.question').text(question.question);
+        $('#buttons').empty();
+        
+        question.answers.forEach((answer, index) => {
+            const button = $('<button>')
+                .addClass('answer-button')
+                .text(answer)
+                .on('click', () => submitAnswer(index));
+            $('#buttons').append(button);
+        });
+        
+        updateScore();
     });
 
     socket.on('updateTimer', (timeLeft) => {
         if (!isScreenConnected) return;
-        $('#timer').text(timeLeft);
+        $('.timer').text(timeLeft);
 
         if (timeLeft <= 0) {
             isQuestionActive = false;
@@ -87,30 +68,28 @@ $(document).ready(function() {
         
         localStorage.setItem(`score_${roomID}_${playerName}`, score);
         
-        $('.btn').removeClass('btn-primary btn-success btn-danger');
-        $('.btn').eq(correctIndex).addClass('btn-success');
-        $('.btn').not(':eq(' + correctIndex + ')').addClass('btn-danger');
+        $('.answer-button').prop('disabled', true);
+        $('.answer-button').eq(correctIndex).addClass('correct');
+        if (selectedAnswerIndex !== null && selectedAnswerIndex !== correctIndex) {
+            $('.answer-button').eq(selectedAnswerIndex).addClass('incorrect');
+        }
         
-        $('.container').append(displayScore());
+        updateScore();
     });
 
     socket.on('waitingForHost', (message) => {
         if (!isScreenConnected) return;
         isQuestionActive = false;
-        $('.container').html(`
-            <div class="text-center">
-                <h2 class="mb-4">${message}</h2>
-            </div>
-        `);
-        $('.container').append(displayScore());
-        $('.container').append(createDisconnectButton());
+        $('.question').text(message);
+        $('#buttons').empty();
+        updateScore();
     });
 
     window.submitAnswer = function(answerIndex) {
         if (!isScreenConnected || !isQuestionActive) return;
         selectedAnswerIndex = answerIndex;
         socket.emit('response', answerIndex);
-        $('.btn').prop('disabled', true);
+        $('.answer-button').prop('disabled', true);
     };
 
     socket.on('disconnect', () => {
